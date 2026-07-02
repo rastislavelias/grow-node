@@ -50,9 +50,6 @@ model PlantProfile {
   minHumidityPct Float
   maxHumidityPct Float
 
-  minSoilMoisturePct Float
-  maxSoilMoisturePct Float
-
   minLightLux Float
   maxLightLux Float
 
@@ -111,10 +108,9 @@ model TelemetryReading {
 
   recordedAt DateTime
 
-  temperatureC    Float
-  humidityPct     Float
-  soilMoisturePct Float
-  lightLux        Float
+  temperatureC Float
+  humidityPct  Float
+  lightLux     Float
 
   rawPayload Json?
 
