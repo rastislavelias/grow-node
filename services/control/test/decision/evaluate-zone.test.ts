@@ -7,7 +7,6 @@ const baseTelemetry = {
   deviceId: 'device-1',
   temperatureC: 24,
   humidityPct: 60,
-  soilMoisturePct: 50,
   lightLux: 500,
   recordedAt: '2026-07-02T12:00:00.000Z',
 }
@@ -17,8 +16,6 @@ const profile = {
   maxTemperatureC: 28,
   minHumidityPct: 45,
   maxHumidityPct: 75,
-  minSoilMoisturePct: 35,
-  maxSoilMoisturePct: 80,
   minLightLux: 200,
   maxLightLux: 900,
 }
