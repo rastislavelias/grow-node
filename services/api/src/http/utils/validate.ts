@@ -1,8 +1,8 @@
 import type { FastifyReply } from 'fastify'
-import type { ZodSchema } from 'zod'
+import { z } from 'zod'
 
 export function validateOrReply<T>(
-  schema: ZodSchema<T>,
+  schema: z.ZodType<T>,
   value: unknown,
   reply: FastifyReply,
 ): T | null {
@@ -11,7 +11,7 @@ export function validateOrReply<T>(
   if (!result.success) {
     reply.status(400).send({
       error: 'Validation failed',
-      issues: result.error.flatten(),
+      issues: z.treeifyError(result.error),
     })
 
     return null
