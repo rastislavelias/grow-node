@@ -3,10 +3,12 @@ import { z } from 'zod'
 export const commandTypeSchema = z.enum(['set-output'])
 export type CommandType = z.infer<typeof commandTypeSchema>
 
-export const setOutputPayloadSchema = z.object({
-  fan: z.boolean(),
-  light: z.boolean(),
-})
+export const setOutputPayloadSchema = z
+  .object({
+    fan: z.boolean(),
+    light: z.boolean(),
+  })
+  .strict()
 
 export type SetOutputPayload = z.infer<typeof setOutputPayloadSchema>
 
