@@ -1,0 +1,13 @@
+node_modules
+.next
+dist
+build
+coverage
+.turbo
+.vercel
+
+.env
+.env.*
+
+firmware/grow-node-zone/.pio
+firmware/grow-node-zone/.vscode

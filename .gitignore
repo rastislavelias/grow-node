@@ -1,0 +1,40 @@
+# dependencies
+node_modules
+
+# environment
+.env
+.env.*
+!.env.example
+
+# build outputs
+.next
+dist
+build
+coverage
+.turbo
+.vercel
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# PlatformIO / firmware
+firmware/grow-node-zone/.pio
+firmware/grow-node-zone/.vscode
+
+# local temp
+tmp
+temp
+
+# Cursor local/scratch files
+.cursor/tmp
+.cursor/scratchpad.md
