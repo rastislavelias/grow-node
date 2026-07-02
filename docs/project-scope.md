@@ -44,16 +44,16 @@ The project should feel like a real system, but it does not need to be productio
 
 Monorepo containing:
 
-* Next.js dashboard
-* Node.js API service
-* Node.js control service
-* Node.js simulator service
-* Shared contracts package
-* Shared database package
-* ESP32 firmware project
-* Docker Compose infrastructure
-* Project documentation
-* Small practical test suite
+- Next.js dashboard
+- Node.js API service
+- Node.js control service
+- Node.js simulator service
+- Shared contracts package
+- Shared database package
+- ESP32 firmware project
+- Docker Compose infrastructure
+- Project documentation
+- Small practical test suite
 
 ---
 
@@ -220,30 +220,30 @@ apps/dashboard
 
 Technology:
 
-* Next.js App Router
-* React
-* TypeScript
-* Tailwind CSS (shadcn)
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS (shadcn)
 
 Responsibilities:
 
-* Display zone overview
-* Display latest telemetry per zone
-* Display latest evaluated zone state
-* Display device heartbeat status
-* Display recent telemetry history
-* Display recent command history
-* Allow simple manual fan/light commands after the read-only flow works
-* Show clear loading, empty, and error states
-* Communicate only with the API service over HTTP
+- Display zone overview
+- Display latest telemetry per zone
+- Display latest evaluated zone state
+- Display device heartbeat status
+- Display recent telemetry history
+- Display recent command history
+- Allow simple manual fan/light commands after the read-only flow works
+- Show clear loading, empty, and error states
+- Communicate only with the API service over HTTP
 
 The dashboard must not:
 
-* Access PostgreSQL directly
-* Import Prisma
-* Connect directly to MQTT
-* Contain control-service decision logic
-* Contain firmware-specific logic
+- Access PostgreSQL directly
+- Import Prisma
+- Connect directly to MQTT
+- Contain control-service decision logic
+- Contain firmware-specific logic
 
 The dashboard is a presentation layer and control surface.
 
@@ -259,25 +259,25 @@ services/api
 
 Technology:
 
-* Node.js
-* TypeScript
-* Fastify
-* Zod
-* Prisma/PostgreSQL
-* MQTT publisher
+- Node.js
+- TypeScript
+- Fastify
+- Zod
+- Prisma/PostgreSQL
+- MQTT publisher
 
 Responsibilities:
 
-* Expose HTTP endpoints for the dashboard
-* Validate request bodies and params with Zod
-* Read zone data from PostgreSQL
-* Read telemetry history from PostgreSQL
-* Read latest zone state from PostgreSQL
-* Read command history from PostgreSQL
-* Create manual command records
-* Publish manual fan/light commands to MQTT
-* Return clear API errors
-* Expose a health endpoint
+- Expose HTTP endpoints for the dashboard
+- Validate request bodies and params with Zod
+- Read zone data from PostgreSQL
+- Read telemetry history from PostgreSQL
+- Read latest zone state from PostgreSQL
+- Read command history from PostgreSQL
+- Create manual command records
+- Publish manual fan/light commands to MQTT
+- Return clear API errors
+- Expose a health endpoint
 
 The API service owns dashboard-facing HTTP access.
 
@@ -295,28 +295,28 @@ services/control
 
 Technology:
 
-* Node.js
-* TypeScript
-* MQTT client
-* Zod
-* Prisma/PostgreSQL
-* Optional Fastify health endpoint only if needed
+- Node.js
+- TypeScript
+- MQTT client
+- Zod
+- Prisma/PostgreSQL
+- Optional Fastify health endpoint only if needed
 
 Responsibilities:
 
-* Connect to the MQTT broker
-* Subscribe to telemetry topics
-* Subscribe to heartbeat topics
-* Subscribe to command acknowledgement topics
-* Validate incoming MQTT payloads with shared Zod schemas
-* Store telemetry readings in PostgreSQL
-* Update latest zone state
-* Evaluate plant profile thresholds
-* Decide desired fan/light state
-* Publish automatic commands when required
-* Track command status and acknowledgements
-* Track device heartbeat status
-* Expose a health endpoint if useful for Docker or debugging
+- Connect to the MQTT broker
+- Subscribe to telemetry topics
+- Subscribe to heartbeat topics
+- Subscribe to command acknowledgement topics
+- Validate incoming MQTT payloads with shared Zod schemas
+- Store telemetry readings in PostgreSQL
+- Update latest zone state
+- Evaluate plant profile thresholds
+- Decide desired fan/light state
+- Publish automatic commands when required
+- Track command status and acknowledgements
+- Track device heartbeat status
+- Expose a health endpoint if useful for Docker or debugging
 
 The control service is the brain of the system.
 
@@ -334,20 +334,20 @@ services/simulator
 
 Technology:
 
-* Plain Node.js
-* TypeScript
-* MQTT client
-* Zod contracts for payload shape
+- Plain Node.js
+- TypeScript
+- MQTT client
+- Zod contracts for payload shape
 
 Responsibilities:
 
-* Connect to the MQTT broker
-* Simulate one or more grow zones
-* Publish fake telemetry at regular intervals
-* Publish fake device heartbeat messages
-* Listen for command messages
-* Publish fake command acknowledgements
-* Support simple scenarios such as normal conditions, or high temperature
+- Connect to the MQTT broker
+- Simulate one or more grow zones
+- Publish fake telemetry at regular intervals
+- Publish fake device heartbeat messages
+- Listen for command messages
+- Publish fake command acknowledgements
+- Support simple scenarios such as normal conditions, or high temperature
 
 The simulator behaves like fake ESP32 hardware.
 
@@ -365,18 +365,18 @@ packages/contracts
 
 Technology:
 
-* TypeScript
-* Zod
+- TypeScript
+- Zod
 
 Responsibilities:
 
-* Define MQTT topic builders
-* Define MQTT payload schemas
-* Define API request schemas
-* Define API response schemas where useful
-* Export TypeScript types inferred from Zod schemas
-* Provide shared enums and status values
-* Prevent duplicated types across apps and services
+- Define MQTT topic builders
+- Define MQTT payload schemas
+- Define API request schemas
+- Define API response schemas where useful
+- Export TypeScript types inferred from Zod schemas
+- Provide shared enums and status values
+- Prevent duplicated types across apps and services
 
 Suggested structure:
 
@@ -408,12 +408,12 @@ packages/contracts/
 
 Contract rules:
 
-* External message shapes belong in `packages/contracts`
-* MQTT topic names belong in `packages/contracts`
-* API request and response contracts belong in `packages/contracts`
-* Local component props do not belong in `packages/contracts`
-* Prisma models do not replace API/MQTT contracts
-* Shared types should be inferred from Zod schemas where possible
+- External message shapes belong in `packages/contracts`
+- MQTT topic names belong in `packages/contracts`
+- API request and response contracts belong in `packages/contracts`
+- Local component props do not belong in `packages/contracts`
+- Prisma models do not replace API/MQTT contracts
+- Shared types should be inferred from Zod schemas where possible
 
 Example pattern:
 
@@ -444,26 +444,26 @@ packages/db
 
 Technology:
 
-* Prisma
-* PostgreSQL
+- Prisma
+- PostgreSQL
 
 Responsibilities:
 
-* Own the Prisma schema
-* Export the Prisma client
-* Provide shared database access for backend services
-* Keep database setup consistent across the project
+- Own the Prisma schema
+- Export the Prisma client
+- Provide shared database access for backend services
+- Keep database setup consistent across the project
 
 The database package may be used by:
 
-* `services/api`
-* `services/control`
+- `services/api`
+- `services/control`
 
 The database package must not be used directly by:
 
-* `apps/dashboard`
-* `services/simulator`
-* `firmware/grow-node-zone`
+- `apps/dashboard`
+- `services/simulator`
+- `firmware/grow-node-zone`
 
 The database package should not contain dashboard UI logic or MQTT decision logic.
 
@@ -479,19 +479,19 @@ firmware/grow-node-zone
 
 Technology:
 
-* C++
-* PlatformIO
-* ESP32
+- C++
+- PlatformIO
+- ESP32
 
 Responsibilities:
 
-* Read sensor values from connected hardware
-* Publish telemetry to MQTT
-* Publish heartbeat messages
-* Subscribe to command topics
-* Apply received commands to outputs such as fan/light relays
-* Publish command acknowledgements
-* Follow the same MQTT contract documented in the repo
+- Read sensor values from connected hardware
+- Publish telemetry to MQTT
+- Publish heartbeat messages
+- Subscribe to command topics
+- Apply received commands to outputs such as fan/light relays
+- Publish command acknowledgements
+- Follow the same MQTT contract documented in the repo
 
 The firmware is included to show the real hardware side of the system, but the local demo must work without hardware.
 
@@ -503,11 +503,11 @@ The first public version uses PostgreSQL.
 
 Reasons:
 
-* The project contains relational app data, not only raw sensor events
-* Zones, devices, plant profiles, telemetry readings, commands, and state are related
-* PostgreSQL is easy to run locally with Docker
-* Prisma works well with PostgreSQL
-* The data model is easier to explain in a portfolio review than a NoSQL access-pattern design
+- The project contains relational app data, not only raw sensor events
+- Zones, devices, plant profiles, telemetry readings, commands, and state are related
+- PostgreSQL is easy to run locally with Docker
+- Prisma works well with PostgreSQL
+- The data model is easier to explain in a portfolio review than a NoSQL access-pattern design
 
 DynamoDB, AWS Timestream, and other cloud databases are out of scope for the first version.
 
@@ -523,11 +523,11 @@ Represents one grow area.
 
 Possible fields:
 
-* id
-* name
-* plantProfileId
-* createdAt
-* updatedAt
+- id
+- name
+- plantProfileId
+- createdAt
+- updatedAt
 
 ### Device
 
@@ -535,14 +535,14 @@ Represents one ESP32 or simulated device.
 
 Possible fields:
 
-* id
-* zoneId
-* name
-* type
-* firmwareVersion
-* lastSeenAt
-* createdAt
-* updatedAt
+- id
+- zoneId
+- name
+- type
+- firmwareVersion
+- lastSeenAt
+- createdAt
+- updatedAt
 
 ### PlantProfile
 
@@ -550,16 +550,16 @@ Represents simple plant condition thresholds.
 
 Possible fields:
 
-* id
-* name
-* minTemperatureC
-* maxTemperatureC
-* minHumidityPct
-* maxHumidityPct
-* minLightLux
-* maxLightLux
-* createdAt
-* updatedAt
+- id
+- name
+- minTemperatureC
+- maxTemperatureC
+- minHumidityPct
+- maxHumidityPct
+- minLightLux
+- maxLightLux
+- createdAt
+- updatedAt
 
 ### TelemetryReading
 
@@ -567,15 +567,15 @@ Represents one sensor reading event from a zone/device.
 
 Possible fields:
 
-* id
-* zoneId
-* deviceId
-* recordedAt
-* temperatureC
-* humidityPct
-* lightLux
-* rawPayload
-* createdAt
+- id
+- zoneId
+- deviceId
+- recordedAt
+- temperatureC
+- humidityPct
+- lightLux
+- rawPayload
+- createdAt
 
 ### ZoneState
 
@@ -583,14 +583,14 @@ Represents the latest evaluated state of a zone.
 
 Possible fields:
 
-* id
-* zoneId
-* status
-* fanDesired
-* lightDesired
-* lastTelemetryAt
-* lastEvaluatedAt
-* updatedAt
+- id
+- zoneId
+- status
+- fanDesired
+- lightDesired
+- lastTelemetryAt
+- lastEvaluatedAt
+- updatedAt
 
 ### Command
 
@@ -598,27 +598,27 @@ Represents a command published to a device.
 
 Possible fields:
 
-* id
-* zoneId
-* deviceId
-* source
-* type
-* payload
-* status
-* createdAt
-* acknowledgedAt
+- id
+- zoneId
+- deviceId
+- source
+- type
+- payload
+- status
+- createdAt
+- acknowledgedAt
 
 Command source examples:
 
-* manual
-* automatic
+- manual
+- automatic
 
 Command status examples:
 
-* pending
-* published
-* acknowledged
-* failed
+- pending
+- published
+- acknowledged
+- failed
 
 ### DeviceHeartbeat
 
@@ -626,11 +626,11 @@ Represents device liveness events.
 
 Possible fields:
 
-* id
-* deviceId
-* seenAt
-* status
-* createdAt
+- id
+- deviceId
+- seenAt
+- status
+- createdAt
 
 ---
 
@@ -727,11 +727,11 @@ Returns zone overview data.
 
 Should include:
 
-* zone id
-* zone name
-* latest telemetry summary
-* latest evaluated state
-* device heartbeat status
+- zone id
+- zone name
+- latest telemetry summary
+- latest evaluated state
+- device heartbeat status
 
 ### `GET /zones/:zoneId/telemetry`
 
@@ -739,7 +739,7 @@ Returns recent telemetry readings for one zone.
 
 Query params may include:
 
-* limit
+- limit
 
 Keep filtering simple.
 
@@ -762,10 +762,10 @@ Allowed body:
 
 The API should:
 
-* validate the request
-* create a command row in PostgreSQL
-* publish a command message to MQTT
-* return the created command
+- validate the request
+- create a command row in PostgreSQL
+- publish a command message to MQTT
+- return the created command
 
 ---
 
@@ -773,104 +773,104 @@ The API should:
 
 ## 15.1 Local infrastructure
 
-* Docker Compose starts PostgreSQL
-* Docker Compose starts Mosquitto
-* Docker Compose starts the API service
-* Docker Compose starts the control service
-* Docker Compose starts the simulator service
-* Docker Compose starts the dashboard
-* Environment variables are documented with `.env.example`
+- Docker Compose starts PostgreSQL
+- Docker Compose starts Mosquitto
+- Docker Compose starts the API service
+- Docker Compose starts the control service
+- Docker Compose starts the simulator service
+- Docker Compose starts the dashboard
+- Environment variables are documented with `.env.example`
 
 ---
 
 ## 15.2 Shared contracts
 
-* MQTT topics are defined centrally
-* MQTT payload schemas are defined with Zod
-* API request schemas are defined with Zod
-* Shared TypeScript types are inferred from Zod schemas
-* Services do not duplicate payload types manually
+- MQTT topics are defined centrally
+- MQTT payload schemas are defined with Zod
+- API request schemas are defined with Zod
+- Shared TypeScript types are inferred from Zod schemas
+- Services do not duplicate payload types manually
 
 ---
 
 ## 15.3 Simulator
 
-* Publishes telemetry for at least one zone
-* Publishes heartbeat messages
-* Uses the shared contracts package
-* Can run inside Docker
-* Logs published telemetry in development
-* Can simulate at least one abnormal condition
-* Can receive fan/light commands
-* Can publish command acknowledgements
+- Publishes telemetry for at least one zone
+- Publishes heartbeat messages
+- Uses the shared contracts package
+- Can run inside Docker
+- Logs published telemetry in development
+- Can simulate at least one abnormal condition
+- Can receive fan/light commands
+- Can publish command acknowledgements
 
 ---
 
 ## 15.4 Control service
 
-* Connects to MQTT
-* Receives telemetry
-* Validates telemetry payloads
-* Stores telemetry in PostgreSQL
-* Updates latest zone state
-* Evaluates simple thresholds from plant profiles
-* Publishes automatic commands when required
-* Receives command acknowledgements
-* Stores command acknowledgement status
-* Tracks heartbeat status
+- Connects to MQTT
+- Receives telemetry
+- Validates telemetry payloads
+- Stores telemetry in PostgreSQL
+- Updates latest zone state
+- Evaluates simple thresholds from plant profiles
+- Publishes automatic commands when required
+- Receives command acknowledgements
+- Stores command acknowledgement status
+- Tracks heartbeat status
 
 ---
 
 ## 15.5 API service
 
-* Exposes dashboard-facing HTTP endpoints
-* Validates params and request bodies with Zod
-* Reads zone data from PostgreSQL
-* Reads telemetry data from PostgreSQL
-* Reads command history from PostgreSQL
-* Creates manual commands
-* Publishes manual commands to MQTT
-* Returns clear error responses
+- Exposes dashboard-facing HTTP endpoints
+- Validates params and request bodies with Zod
+- Reads zone data from PostgreSQL
+- Reads telemetry data from PostgreSQL
+- Reads command history from PostgreSQL
+- Creates manual commands
+- Publishes manual commands to MQTT
+- Returns clear error responses
 
 ---
 
 ## 15.6 Dashboard
 
-* Shows all zones
-* Shows latest telemetry per zone
-* Shows latest evaluated zone state
-* Shows whether device heartbeat is recent
-* Shows recent telemetry history
-* Shows recent command history
-* Calls the API service over HTTP
-* Does not access PostgreSQL directly
-* Does not connect to MQTT directly
-* Provides simple manual fan/light controls after read-only display works
+- Shows all zones
+- Shows latest telemetry per zone
+- Shows latest evaluated zone state
+- Shows whether device heartbeat is recent
+- Shows recent telemetry history
+- Shows recent command history
+- Calls the API service over HTTP
+- Does not access PostgreSQL directly
+- Does not connect to MQTT directly
+- Provides simple manual fan/light controls after read-only display works
 
 ---
 
 ## 15.7 Firmware
 
-* Firmware folder exists in the repository
-* Firmware README explains required hardware
-* Firmware README explains how to build and upload
-* Firmware follows the documented MQTT topic/payload contract
-* Firmware is not required for the local demo
+- Firmware folder exists in the repository
+- Firmware README explains required hardware
+- Firmware README explains how to build and upload
+- Firmware follows the documented MQTT topic/payload contract
+- Firmware is not required for the local demo
 
 ---
 
 ## 15.8 Documentation
 
-* Root README explains the system in simple English
-* `project-scope.md` defines the project boundaries
-* `docs/architecture.md` explains the data flow
-* `docs/local-development.md` explains how to run locally
-* `docs/mqtt-topics.md` documents topics and payloads
-* `docs/api.md` documents initial API endpoints
-* `docs/hardware.md` lists hardware used
-* `docs/wiring.md` explains wiring at a high level
-* `docs/testing.md` explains the test approach
-* `docs/ai-usage.md` explains how AI assistance was used
+- Root README explains the system in simple English
+- `project-scope.md` defines the project boundaries
+- `docs/architecture.md` explains the data flow
+- `docs/local-development.md` explains how to run locally
+- `docs/mqtt-topics.md` documents topics and payloads
+- `docs/api.md` documents initial API endpoints
+- `docs/hardware.md` lists hardware used
+- `docs/wiring.md` explains wiring at a high level
+- `docs/testing.md` explains the test approach
+- `docs/ai-usage.md` explains how AI assistance was used
 
 ---
 
@@ -886,42 +886,42 @@ Required first test targets:
 
 Test that:
 
-* valid telemetry payloads pass validation
-* invalid telemetry payloads fail validation
-* valid command payloads pass validation
-* invalid command payloads fail validation
+- valid telemetry payloads pass validation
+- invalid telemetry payloads fail validation
+- valid command payloads pass validation
+- invalid command payloads fail validation
 
 ### Control service
 
 Test that:
 
-* normal telemetry creates normal zone status
-* high temperature creates expected fan decision
-* decision logic does not require MQTT or database to run
+- normal telemetry creates normal zone status
+- high temperature creates expected fan decision
+- decision logic does not require MQTT or database to run
 
 ### API service
 
 Test that:
 
-* valid manual command request passes validation
-* invalid manual command request fails validation
-* command route rejects invalid params/body
+- valid manual command request passes validation
+- invalid manual command request fails validation
+- command route rejects invalid params/body
 
 Optional later tests:
 
-* API route integration tests
-* dashboard component tests
-* simulator payload generation tests
+- API route integration tests
+- dashboard component tests
+- simulator payload generation tests
 
 Out of scope for the first version:
 
-* Full end-to-end browser tests
-* Playwright
-* Testcontainers
-* Real MQTT integration tests
-* Real firmware tests
-* Full dashboard test coverage
-* Complex mocking setup
+- Full end-to-end browser tests
+- Playwright
+- Testcontainers
+- Real MQTT integration tests
+- Real firmware tests
+- Full dashboard test coverage
+- Complex mocking setup
 
 ---
 
@@ -929,26 +929,26 @@ Out of scope for the first version:
 
 The first public version will not include:
 
-* AWS
-* AWS IoT Core
-* Lambda
-* DynamoDB
-* Timestream
-* Authentication
-* User accounts
-* Multi-tenant support
-* Public cloud deployment
-* Remote access
-* Advanced alerting
-* Email/SMS notifications
-* Complex rule builder
-* AI plant recommendations
-* Historical analytics beyond simple recent readings
-* Production-grade device provisioning
-* OTA firmware updates (?)
-* Message queues beyond MQTT
-* Complex caching
-* Full end-to-end test suite before the first working demo
+- AWS
+- AWS IoT Core
+- Lambda
+- DynamoDB
+- Timestream
+- Authentication
+- User accounts
+- Multi-tenant support
+- Public cloud deployment
+- Remote access
+- Advanced alerting
+- Email/SMS notifications
+- Complex rule builder
+- AI plant recommendations
+- Historical analytics beyond simple recent readings
+- Production-grade device provisioning
+- OTA firmware updates (?)
+- Message queues beyond MQTT
+- Complex caching
+- Full end-to-end test suite before the first working demo
 
 These may be documented as future ideas, but they should not be built in the first refactor.
 
@@ -958,34 +958,34 @@ These may be documented as future ideas, but they should not be built in the fir
 
 ### General
 
-* Keep the project understandable
-* Prefer simple architecture over clever architecture
-* Avoid adding services unless they have a clear responsibility
-* Avoid premature production design
-* Prioritize a working local demo
-* Keep the project reviewer-friendly
+- Keep the project understandable
+- Prefer simple architecture over clever architecture
+- Avoid adding services unless they have a clear responsibility
+- Avoid premature production design
+- Prioritize a working local demo
+- Keep the project reviewer-friendly
 
 ### Code
 
-* TypeScript is required for all Node.js and Next.js code
-* Do not use `any`
-* Prefer readable types over complex generic types
-* Use Zod for external boundaries
-* Validate MQTT payloads before using them
-* Validate API requests before using them
-* Keep MQTT payload types shared
-* Keep API request/response contracts shared where useful
-* Keep business logic out of the dashboard
-* Keep database access out of the dashboard
+- TypeScript is required for all Node.js and Next.js code
+- Do not use `any`
+- Prefer readable types over complex generic types
+- Use Zod for external boundaries
+- Validate MQTT payloads before using them
+- Validate API requests before using them
+- Keep MQTT payload types shared
+- Keep API request/response contracts shared where useful
+- Keep business logic out of the dashboard
+- Keep database access out of the dashboard
 
 ### UI
 
-* Dashboard should be clean, calm, and readable
-* Desktop dashboard layout is the priority
-* Mobile support is useful but secondary
-* Avoid unnecessary animations
-* Avoid over-designed visuals
-* Prioritize clear system status
+- Dashboard should be clean, calm, and readable
+- Desktop dashboard layout is the priority
+- Mobile support is useful but secondary
+- Avoid unnecessary animations
+- Avoid over-designed visuals
+- Prioritize clear system status
 
 ---
 
@@ -995,14 +995,14 @@ AI assistance is allowed and should be documented honestly.
 
 AI may be used for:
 
-* Planning
-* Architecture discussion
-* Refactoring ideas
-* Debugging support
-* Code review prompts
-* Documentation drafts
-* Boilerplate generation
-* Test ideas
+- Planning
+- Architecture discussion
+- Refactoring ideas
+- Debugging support
+- Code review prompts
+- Documentation drafts
+- Boilerplate generation
+- Test ideas
 
 AI should not be used as a replacement for understanding.
 
@@ -1022,19 +1022,19 @@ Cursor project rules may be stored in:
 
 The rule file should remind the assistant/agent about:
 
-* local-first scope
-* no AWS
-* no authentication
-* no cloud deployment
-* dashboard communicates with API only
-* API owns dashboard-facing HTTP
-* control service owns telemetry ingestion
-* shared contracts live in `packages/contracts`
-* database access setup lives in `packages/db`
-* TypeScript is required
-* `any` is not allowed
-* Zod is used for external boundaries
-* tests should stay small and practical
+- local-first scope
+- no AWS
+- no authentication
+- no cloud deployment
+- dashboard communicates with API only
+- API owns dashboard-facing HTTP
+- control service owns telemetry ingestion
+- shared contracts live in `packages/contracts`
+- database access setup lives in `packages/db`
+- TypeScript is required
+- `any` is not allowed
+- Zod is used for external boundaries
+- tests should stay small and practical
 
 Optional tool-agnostic agent instructions may be stored in:
 
@@ -1117,30 +1117,30 @@ Build the project in this order:
 
 The first public version is done when:
 
-* The repository is a clean monorepo
-* Docker Compose starts the local system
-* Mosquitto runs locally
-* PostgreSQL runs locally
-* The simulator publishes telemetry
-* The simulator publishes heartbeat messages
-* The control service consumes telemetry
-* The control service validates incoming MQTT payloads
-* Telemetry is stored in PostgreSQL
-* Latest zone state is stored and updated
-* The API service exposes dashboard-facing endpoints
-* The dashboard reads data from the API service
-* The dashboard displays zone overview
-* The dashboard displays latest telemetry/state
-* The dashboard displays command history
-* Simple fan/light commands work in demo mode
-* Command acknowledgements are visible in the system
-* Shared contracts prevent duplicated MQTT/API payload types
-* A small practical test suite exists
-* Firmware folder is present and documented
-* Root README explains the system clearly
-* Local development docs are complete
-* AI usage is documented honestly
-* A reviewer can understand the architecture without extra explanation
+- The repository is a clean monorepo
+- Docker Compose starts the local system
+- Mosquitto runs locally
+- PostgreSQL runs locally
+- The simulator publishes telemetry
+- The simulator publishes heartbeat messages
+- The control service consumes telemetry
+- The control service validates incoming MQTT payloads
+- Telemetry is stored in PostgreSQL
+- Latest zone state is stored and updated
+- The API service exposes dashboard-facing endpoints
+- The dashboard reads data from the API service
+- The dashboard displays zone overview
+- The dashboard displays latest telemetry/state
+- The dashboard displays command history
+- Simple fan/light commands work in demo mode
+- Command acknowledgements are visible in the system
+- Shared contracts prevent duplicated MQTT/API payload types
+- A small practical test suite exists
+- Firmware folder is present and documented
+- Root README explains the system clearly
+- Local development docs are complete
+- AI usage is documented honestly
+- A reviewer can understand the architecture without extra explanation
 
 ---
 
