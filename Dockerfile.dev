@@ -10,6 +10,7 @@ COPY packages/db/package.json packages/db/package.json
 COPY services/api/package.json services/api/package.json
 COPY services/control/package.json services/control/package.json
 COPY services/simulator/package.json services/simulator/package.json
+COPY apps/dashboard/package.json apps/dashboard/package.json
 
 RUN pnpm install --frozen-lockfile
 
