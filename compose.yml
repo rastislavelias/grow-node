@@ -22,5 +22,51 @@ services:
     volumes:
       - ./infra/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: grow-node-api
+    restart: unless-stopped
+    command: pnpm --filter @grow-node/api dev
+    environment:
+      DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
+      MQTT_URL: mqtt://mosquitto:1883
+      API_HOST: 0.0.0.0
+      API_PORT: 4000
+      DASHBOARD_ORIGIN: http://localhost:3000
+    ports:
+      - '4000:4000'
+    depends_on:
+      - postgres
+      - mosquitto
+
+  control:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: grow-node-control
+    restart: unless-stopped
+    command: pnpm --filter @grow-node/control dev
+    environment:
+      DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
+      MQTT_URL: mqtt://mosquitto:1883
+    depends_on:
+      - postgres
+      - mosquitto
+
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: grow-node-simulator
+    restart: unless-stopped
+    command: pnpm --filter @grow-node/simulator dev
+    environment:
+      MQTT_URL: mqtt://mosquitto:1883
+      SIMULATOR_INTERVAL_MS: 5000
+    depends_on:
+      - mosquitto
+
 volumes:
   postgres-data:
