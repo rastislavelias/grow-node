@@ -2,6 +2,7 @@ import { db } from '@grow-node/db'
 
 import { env } from './config/env.js'
 import { createServer } from './http/server.js'
+import { closeMqttPublisher } from './mqtt/publisher.js'
 
 const app = createServer()
 
@@ -17,6 +18,7 @@ try {
 }
 
 async function shutdown() {
+  closeMqttPublisher()
   await app.close()
   await db.$disconnect()
   process.exit(0)

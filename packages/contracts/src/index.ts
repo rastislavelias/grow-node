@@ -32,3 +32,8 @@ export {
   type CommandStatus,
   type ZoneStatus,
 } from './shared/status.js'
+
+export {
+  manualCommandRequestSchema,
+  type ManualCommandRequest,
+} from './api/commands.js'
