@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DeviceType {
+  ESP32
+  SIMULATOR
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+}
+
+enum ZoneStatus {
+  NORMAL
+  WARNING
+  CRITICAL
+}
+
+enum CommandSource {
+  MANUAL
+  AUTOMATIC
+}
+
+enum CommandType {
+  SET_OUTPUT
+}
+
+enum CommandStatus {
+  PENDING
+  PUBLISHED
+  ACKNOWLEDGED
+  FAILED
+}
+
+model PlantProfile {
+  id String @id @default(cuid())
+
+  name String @unique
+
+  minTemperatureC Float
+  maxTemperatureC Float
+
+  minHumidityPct Float
+  maxHumidityPct Float
+
+  minSoilMoisturePct Float
+  maxSoilMoisturePct Float
+
+  minLightLux Float
+  maxLightLux Float
+
+  zones Zone[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Zone {
+  id String @id
+
+  name String
+
+  plantProfileId String
+  plantProfile   PlantProfile @relation(fields: [plantProfileId], references: [id])
+
+  devices           Device[]
+  telemetryReadings TelemetryReading[]
+  commands          Command[]
+  state             ZoneState?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Device {
+  id String @id
+
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  name            String
+  type            DeviceType
+  firmwareVersion String?
+  lastSeenAt      DateTime?
+
+  telemetryReadings TelemetryReading[]
+  commands          Command[]
+  heartbeats        DeviceHeartbeat[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([zoneId])
+}
+
+model TelemetryReading {
+  id String @id @default(cuid())
+
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  recordedAt DateTime
+
+  temperatureC    Float
+  humidityPct     Float
+  soilMoisturePct Float
+  lightLux        Float
+
+  rawPayload Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([zoneId, recordedAt])
+  @@index([deviceId, recordedAt])
+}
+
+model ZoneState {
+  id String @id @default(cuid())
+
+  zoneId String @unique
+  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  status ZoneStatus @default(NORMAL)
+
+  fanDesired   Boolean @default(false)
+  lightDesired Boolean @default(false)
+
+  lastTelemetryAt DateTime?
+  lastEvaluatedAt DateTime?
+
+  updatedAt DateTime @updatedAt
+}
+
+model Command {
+  id String @id @default(cuid())
+
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  source CommandSource
+  type   CommandType
+  status CommandStatus @default(PENDING)
+
+  payload Json
+
+  createdAt      DateTime  @default(now())
+  publishedAt    DateTime?
+  acknowledgedAt DateTime?
+
+  @@index([zoneId, createdAt])
+  @@index([deviceId, createdAt])
+  @@index([status])
+}
+
+model DeviceHeartbeat {
+  id String @id @default(cuid())
+
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  seenAt DateTime
+  status DeviceStatus
+
+  createdAt DateTime @default(now())
+
+  @@index([deviceId, seenAt])
+}

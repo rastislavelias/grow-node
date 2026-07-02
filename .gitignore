@@ -38,3 +38,6 @@ temp
 # Cursor local/scratch files
 .cursor/tmp
 .cursor/scratchpad.md
+
+# Prisma
+packages/db/src/generated

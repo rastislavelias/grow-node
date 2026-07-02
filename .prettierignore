@@ -11,3 +11,5 @@ coverage
 
 firmware/grow-node-zone/.pio
 firmware/grow-node-zone/.vscode
+
+packages/db/src/generated

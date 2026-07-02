@@ -6,7 +6,10 @@
     "format:check": "prettier --check .",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @grow-node/db db:generate",
+    "db:migrate": "pnpm --filter @grow-node/db db:migrate",
+    "db:studio": "pnpm --filter @grow-node/db db:studio"
   },
   "devDependencies": {
     "prettier": "^3.6.2"
