@@ -1,0 +1,101 @@
+---
+description: Grow Node project rules
+alwaysApply: true
+---
+
+# Grow Node Rules
+
+## Project goal
+
+Grow Node is a local-first IoT grow monitoring system.
+
+The first public version must run locally with Docker Compose and simulated telemetry.
+
+Do not add AWS, authentication, cloud deployment, multi-tenant features, production IoT provisioning, advanced analytics, alerts, or extra services unless explicitly requested.
+
+## Architecture
+
+Local data flow:
+
+simulator or ESP32 firmware -> Mosquitto MQTT -> control service -> PostgreSQL -> API service -> Next.js dashboard
+
+Main folders:
+
+- `apps/dashboard` — Next.js dashboard
+- `services/api` — dashboard-facing HTTP API
+- `services/control` — MQTT subscriber, decision engine, database writes
+- `services/simulator` — fake ESP32 telemetry publisher
+- `packages/contracts` — Zod schemas, MQTT topics, shared API/MQTT types
+- `packages/db` — Prisma schema and database client
+- `firmware/grow-node-zone` — ESP32 firmware, not part of pnpm workspace
+- `docs` — architecture and development documentation
+
+## Code rules
+
+- Use TypeScript for all Node.js and Next.js code.
+- Do not use `any`.
+- Use Zod for external boundaries.
+- Validate MQTT payloads before using them.
+- Validate API params and request bodies before using them.
+- Keep shared MQTT/API contracts in `packages/contracts`.
+- Keep Prisma schema and database client in `packages/db`.
+- Do not duplicate shared payload types across services.
+- Prefer simple readable types over complex generic types.
+
+## Dashboard rules
+
+- Use Next.js App Router.
+- Prefer server components by default.
+- Use client components only for interactivity.
+- Dashboard communicates with `services/api` over HTTP.
+- Dashboard must not import Prisma.
+- Dashboard must not connect directly to MQTT.
+- Dashboard must not contain control-service decision logic.
+
+## API service rules
+
+- API owns dashboard-facing HTTP access.
+- API validates requests with Zod.
+- API reads dashboard data from PostgreSQL.
+- API can create manual command records.
+- API can publish manual fan/light commands to MQTT.
+- API does not consume telemetry from MQTT.
+
+## Control service rules
+
+- Control service owns telemetry ingestion.
+- Control service subscribes to telemetry, heartbeat, and command acknowledgement topics.
+- Control service validates incoming MQTT payloads.
+- Control service stores telemetry readings.
+- Control service updates latest zone state.
+- Control service evaluates plant profile thresholds.
+- Control service can publish automatic commands.
+- Control service processes command acknowledgements.
+
+## Simulator rules
+
+- Simulator behaves like fake ESP32 hardware.
+- Use plain Node.js TypeScript.
+- Do not add Fastify to the simulator unless explicitly requested.
+- Simulator publishes telemetry and heartbeat messages over MQTT.
+- Simulator listens for commands and publishes command acknowledgements.
+
+## Testing rules
+
+Testing should stay small and practical.
+
+Prioritize:
+
+- contract schema validation tests
+- control service decision logic tests
+- API command validation tests
+
+Do not add Playwright, Testcontainers, real MQTT integration tests, or complex E2E tests in the first version.
+
+## Workflow
+
+- Keep commits small and descriptive.
+- Avoid `wip`, `fix`, `update`, and unclear commit messages.
+- Before large changes, propose a short plan.
+- Update docs when architecture, setup commands, API routes, or MQTT contracts change.
+- Do not expand scope without updating `docs/project-scope.md`.
