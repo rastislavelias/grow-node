@@ -5,7 +5,7 @@ import { zonePhaseSchema, zoneStatusSchema } from '../shared/status.js'
 export const zoneStateReasonSchema = z
   .object({
     metric: z.string(),
-    status: z.enum(['warning', 'danger']),
+    status: z.enum(['settling', 'warning', 'danger']),
     value: z.number(),
     direction: z.enum(['low', 'high', 'risk']),
   })

@@ -11,7 +11,7 @@ const anubiasPhaseConfig = {
     estimatedPpfd: {
       optimal: [30, 75],
       warning: [13, 115],
-      settleMinutes: 5,
+      settleMinutes: 0,
     },
     humidity: {
       optimal: [88, 95],
@@ -21,7 +21,7 @@ const anubiasPhaseConfig = {
     illuminance: {
       optimal: [1800, 4500],
       warning: [800, 7000],
-      settleMinutes: 5,
+      settleMinutes: 0,
     },
     temperature: {
       optimal: [22, 26],
@@ -45,7 +45,7 @@ const anubiasPhaseConfig = {
     estimatedPpfd: {
       optimal: [0, 0.2],
       warning: [0, 1],
-      settleMinutes: 5,
+      settleMinutes: 0,
     },
     humidity: {
       optimal: [90, 97],
@@ -55,7 +55,7 @@ const anubiasPhaseConfig = {
     illuminance: {
       optimal: [0, 10],
       warning: [0, 50],
-      settleMinutes: 5,
+      settleMinutes: 0,
     },
     temperature: {
       optimal: [20, 24],

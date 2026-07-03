@@ -13,9 +13,11 @@ type MetricName =
 
 type Direction = 'low' | 'high' | 'risk'
 
+type MetricStatus = 'settling' | 'warning' | 'danger'
+
 export type EvaluationReason = {
   metric: MetricName
-  status: Exclude<EvaluationStatus, 'normal'>
+  status: MetricStatus
   value: number
   direction: Direction
 }
@@ -85,16 +87,51 @@ export function getActivePhase({
   return isLightOn ? 'lightOn' : 'lightOff'
 }
 
+function getMinutesSincePhaseStarted({
+  now,
+  activePhase,
+  scheduleStartMinutes,
+  scheduleDurationMinutes,
+}: {
+  now: Date
+  activePhase: EvaluationPhase
+  scheduleStartMinutes: number
+  scheduleDurationMinutes: number
+}): number {
+  const currentMinutes = getMinutesAfterMidnight(now)
+
+  if (activePhase === 'lightOn') {
+    if (currentMinutes >= scheduleStartMinutes) {
+      return currentMinutes - scheduleStartMinutes
+    }
+
+    return minutesPerDay - scheduleStartMinutes + currentMinutes
+  }
+
+  const lightOffStartMinutes =
+    (scheduleStartMinutes + scheduleDurationMinutes) % minutesPerDay
+
+  if (currentMinutes >= lightOffStartMinutes) {
+    return currentMinutes - lightOffStartMinutes
+  }
+
+  return minutesPerDay - lightOffStartMinutes + currentMinutes
+}
+
 function evaluateRangeMetric({
   metric,
   value,
   optimal,
   warning,
+  settleMinutes,
+  minutesSincePhaseStarted,
 }: {
   metric: MetricName
   value: number
   optimal: [number, number]
   warning: [number, number]
+  settleMinutes: number
+  minutesSincePhaseStarted: number
 }): EvaluationReason | null {
   if (value >= optimal[0] && value <= optimal[1]) {
     return null
@@ -105,7 +142,7 @@ function evaluateRangeMetric({
   if (value >= warning[0] && value <= warning[1]) {
     return {
       metric,
-      status: 'warning',
+      status: minutesSincePhaseStarted < settleMinutes ? 'settling' : 'warning',
       value,
       direction,
     }
@@ -119,10 +156,15 @@ function evaluateRangeMetric({
   }
 }
 
-function evaluateCondensationMargin(
-  value: number | undefined,
-  phaseConfig: PhaseMetricsConfig,
-): EvaluationReason | null {
+function evaluateCondensationMargin({
+  value,
+  phaseConfig,
+  minutesSincePhaseStarted,
+}: {
+  value: number | undefined
+  phaseConfig: PhaseMetricsConfig
+  minutesSincePhaseStarted: number
+}): EvaluationReason | null {
   if (value === undefined) {
     return null
   }
@@ -136,7 +178,10 @@ function evaluateCondensationMargin(
   if (value >= config.mediumRiskMin) {
     return {
       metric: 'condensationMargin',
-      status: 'warning',
+      status:
+        minutesSincePhaseStarted < config.settleMinutes
+          ? 'settling'
+          : 'warning',
       value,
       direction: 'risk',
     }
@@ -174,24 +219,37 @@ export function evaluateZone({
 
   const phaseConfig = plantProfile.phaseConfig[activePhase]
 
+  const minutesSincePhaseStarted = getMinutesSincePhaseStarted({
+    now: telemetry.recordedAt,
+    activePhase,
+    scheduleStartMinutes: plantProfile.scheduleStartMinutes,
+    scheduleDurationMinutes: plantProfile.scheduleDurationMinutes,
+  })
+
   const reasons = [
     evaluateRangeMetric({
       metric: 'temperature',
       value: telemetry.temperatureC,
       optimal: phaseConfig.temperature.optimal,
       warning: phaseConfig.temperature.warning,
+      settleMinutes: phaseConfig.temperature.settleMinutes,
+      minutesSincePhaseStarted,
     }),
     evaluateRangeMetric({
       metric: 'humidity',
       value: telemetry.humidityPct,
       optimal: phaseConfig.humidity.optimal,
       warning: phaseConfig.humidity.warning,
+      settleMinutes: phaseConfig.humidity.settleMinutes,
+      minutesSincePhaseStarted,
     }),
     evaluateRangeMetric({
       metric: 'illuminance',
       value: telemetry.lightLux,
       optimal: phaseConfig.illuminance.optimal,
       warning: phaseConfig.illuminance.warning,
+      settleMinutes: phaseConfig.illuminance.settleMinutes,
+      minutesSincePhaseStarted,
     }),
     telemetry.estimatedPpfd === undefined
       ? null
@@ -200,6 +258,8 @@ export function evaluateZone({
           value: telemetry.estimatedPpfd,
           optimal: phaseConfig.estimatedPpfd.optimal,
           warning: phaseConfig.estimatedPpfd.warning,
+          settleMinutes: phaseConfig.estimatedPpfd.settleMinutes,
+          minutesSincePhaseStarted,
         }),
     telemetry.vpdKpa === undefined
       ? null
@@ -208,8 +268,14 @@ export function evaluateZone({
           value: telemetry.vpdKpa,
           optimal: phaseConfig.vpd.optimal,
           warning: phaseConfig.vpd.warning,
+          settleMinutes: phaseConfig.vpd.settleMinutes,
+          minutesSincePhaseStarted,
         }),
-    evaluateCondensationMargin(telemetry.condensationMarginC, phaseConfig),
+    evaluateCondensationMargin({
+      value: telemetry.condensationMarginC,
+      phaseConfig,
+      minutesSincePhaseStarted,
+    }),
   ].filter((reason): reason is EvaluationReason => reason !== null)
 
   const status = getOverallStatus(reasons)
