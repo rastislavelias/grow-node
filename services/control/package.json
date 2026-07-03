@@ -11,6 +11,7 @@
   "dependencies": {
     "@grow-node/contracts": "workspace:*",
     "@grow-node/db": "workspace:*",
+    "fastify": "^5.9.0",
     "mqtt": "^5.14.1",
     "zod": "^4.1.13"
   },

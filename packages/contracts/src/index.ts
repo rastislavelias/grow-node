@@ -39,6 +39,11 @@ export {
 } from './api/commands.js'
 
 export {
+  systemHealthResponseSchema,
+  type SystemHealthResponse,
+} from './api/health.js'
+
+export {
   zonesResponseSchema,
   zoneOverviewSchema,
   type ZoneOverview,

@@ -5,8 +5,9 @@ import {
   ThermometerIcon,
 } from 'lucide-react'
 
-import { getZones } from '@/lib/api'
+import { getSystemHealth, getZones } from '@/lib/api'
 
+import { AutoRefresh } from '@/components/auto-refresh'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -17,9 +18,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ContainerMain } from '@/components/container-main'
 import { SiteHeader } from '@/components/site-header'
+import { SystemHealthCard } from '@/components/system-health-card'
 
 export default async function Home() {
-  const { zones } = await getZones()
+  const [{ zones }, health] = await Promise.all([getZones(), getSystemHealth()])
 
   const onlineDevices = zones.reduce((total, zone) => {
     return total + zone.devices.filter((device) => device.lastSeenAt).length
@@ -35,6 +37,7 @@ export default async function Home() {
 
   return (
     <>
+      <AutoRefresh intervalMs={5000} />
       <SiteHeader>
         <Breadcrumb>
           <BreadcrumbList>
@@ -53,6 +56,7 @@ export default async function Home() {
               state.
             </p>
           </header>
+          <SystemHealthCard health={health} />
 
           <section className="grid gap-4 md:grid-cols-4">
             <Card>

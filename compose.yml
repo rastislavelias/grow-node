@@ -32,6 +32,8 @@ services:
     environment:
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
+      CONTROL_HEALTH_URL: http://control:4100/health
+      HEARTBEAT_STALE_MS: 30000
       API_HOST: 0.0.0.0
       API_PORT: 4000
       DASHBOARD_ORIGIN: http://localhost:3000
@@ -54,6 +56,8 @@ services:
     environment:
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
+      CONTROL_HOST: 0.0.0.0
+      CONTROL_PORT: 4100
     volumes:
       - .:/app
       - /app/node_modules
