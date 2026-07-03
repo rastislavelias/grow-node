@@ -56,12 +56,12 @@ export async function registerHealthRoutes(app: FastifyInstance) {
     const allDependenciesOk =
       database === 'ok' && mqtt === 'ok' && control === 'ok'
 
-    const hasRecentDeviceHeartbeat =
-      totalDevices === 0 ? false : recentlySeenDevices > 0
+    const allDevicesRecentlySeen =
+      totalDevices > 0 && recentlySeenDevices === totalDevices
 
     const response = {
       service: 'api',
-      status: allDependenciesOk && hasRecentDeviceHeartbeat ? 'ok' : 'degraded',
+      status: allDependenciesOk && allDevicesRecentlySeen ? 'ok' : 'degraded',
       checkedAt: new Date().toISOString(),
       dependencies: {
         database,
