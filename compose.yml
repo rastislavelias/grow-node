@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grow-node-api
     restart: unless-stopped
-    command: pnpm --filter @grow-node/api dev
+    command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/api dev"
     environment:
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grow-node-control
     restart: unless-stopped
-    command: pnpm --filter @grow-node/control dev
+    command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/control dev"
     environment:
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
@@ -67,7 +67,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grow-node-simulator
     restart: unless-stopped
-    command: pnpm --filter @grow-node/simulator dev
+    command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/simulator dev"
     environment:
       MQTT_URL: mqtt://mosquitto:1883
       SIMULATOR_INTERVAL_MS: 5000
@@ -83,8 +83,9 @@ services:
       dockerfile: Dockerfile.dev
     container_name: grow-node-dashboard
     restart: unless-stopped
-    command: pnpm --filter @grow-node/dashboard dev
+    command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/dashboard dev"
     environment:
+      API_INTERNAL_URL: http://api:4000
       NEXT_PUBLIC_API_URL: http://localhost:4000
     ports:
       - '3000:3000'

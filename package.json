@@ -5,7 +5,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @grow-node/contracts build && pnpm -r typecheck",
     "test": "pnpm -r test",
     "db:generate": "pnpm --filter @grow-node/db db:generate",
     "db:migrate": "pnpm --filter @grow-node/db db:migrate",

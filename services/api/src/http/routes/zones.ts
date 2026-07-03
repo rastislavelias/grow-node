@@ -1,6 +1,8 @@
-import { db } from '@grow-node/db'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
+
+import { db } from '@grow-node/db'
+import { zonesResponseSchema } from '@grow-node/contracts'
 
 import { validateOrReply } from '../utils/validate.js'
 
@@ -30,15 +32,38 @@ export async function registerZoneRoutes(app: FastifyInstance) {
       },
     })
 
-    return {
+    const response = {
       zones: zones.map((zone) => ({
         id: zone.id,
         name: zone.name,
-        state: zone.state,
-        devices: zone.devices,
-        latestTelemetry: zone.telemetryReadings[0] ?? null,
+        state: zone.state
+          ? {
+              status: zone.state.status.toLowerCase(),
+              fanDesired: zone.state.fanDesired,
+              lightDesired: zone.state.lightDesired,
+              lastTelemetryAt:
+                zone.state.lastTelemetryAt?.toISOString() ?? null,
+              lastEvaluatedAt:
+                zone.state.lastEvaluatedAt?.toISOString() ?? null,
+            }
+          : null,
+        devices: zone.devices.map((device) => ({
+          id: device.id,
+          name: device.name,
+          lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+        })),
+        latestTelemetry: zone.telemetryReadings[0]
+          ? {
+              temperatureC: zone.telemetryReadings[0].temperatureC,
+              humidityPct: zone.telemetryReadings[0].humidityPct,
+              lightLux: zone.telemetryReadings[0].lightLux,
+              recordedAt: zone.telemetryReadings[0].recordedAt.toISOString(),
+            }
+          : null,
       })),
     }
+
+    return zonesResponseSchema.parse(response)
   })
 
   app.get('/zones/:zoneId', async (request, reply) => {

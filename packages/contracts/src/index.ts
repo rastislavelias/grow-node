@@ -37,3 +37,10 @@ export {
   manualCommandRequestSchema,
   type ManualCommandRequest,
 } from './api/commands.js'
+
+export {
+  zonesResponseSchema,
+  zoneOverviewSchema,
+  type ZoneOverview,
+  type ZonesResponse,
+} from './api/zones.js'
