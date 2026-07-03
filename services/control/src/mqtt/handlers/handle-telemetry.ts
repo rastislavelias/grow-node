@@ -1,64 +1,29 @@
-import { telemetryPayloadSchema, type ZoneStatus } from '@grow-node/contracts'
-import { db, ZoneStatus as DbZoneStatus } from '@grow-node/db'
-
+import { phaseConfigSchema, telemetryPayloadSchema } from '@grow-node/contracts'
 import {
-  evaluateZone,
-  type ZoneDecision,
-} from '../../decision/evaluate-zone.js'
-import { parseJson } from '../../utils/parse-json.js'
+  db,
+  ZonePhase as DbZonePhase,
+  ZoneStatus as DbZoneStatus,
+} from '@grow-node/db'
 
-function toDbZoneStatus(status: ZoneStatus): DbZoneStatus {
-  switch (status) {
-    case 'normal':
-      return DbZoneStatus.NORMAL
-    case 'warning':
-      return DbZoneStatus.WARNING
-    case 'critical':
-      return DbZoneStatus.CRITICAL
-  }
-}
+import { evaluateZone } from '../../decision/evaluate-zone.js'
 
-async function updateZoneState(
-  zoneId: string,
-  decision: ZoneDecision,
-  recordedAt: Date,
-) {
-  await db.zoneState.upsert({
-    where: {
-      zoneId,
-    },
-    update: {
-      status: toDbZoneStatus(decision.status),
-      fanDesired: decision.fanDesired,
-      lightDesired: decision.lightDesired,
-      lastTelemetryAt: recordedAt,
-      lastEvaluatedAt: new Date(),
-    },
-    create: {
-      zoneId,
-      status: toDbZoneStatus(decision.status),
-      fanDesired: decision.fanDesired,
-      lightDesired: decision.lightDesired,
-      lastTelemetryAt: recordedAt,
-      lastEvaluatedAt: new Date(),
-    },
-  })
-}
+const zoneStatusMap = {
+  normal: DbZoneStatus.NORMAL,
+  warning: DbZoneStatus.WARNING,
+  danger: DbZoneStatus.DANGER,
+} as const
+
+const zonePhaseMap = {
+  lightOn: DbZonePhase.LIGHT_ON,
+  lightOff: DbZonePhase.LIGHT_OFF,
+} as const
 
 export async function handleTelemetryMessage(message: Buffer) {
-  const parsedJson = parseJson(message)
-  const result = telemetryPayloadSchema.safeParse(parsedJson)
-
-  if (!result.success) {
-    console.error('Invalid telemetry payload', result.error.flatten())
-    return
-  }
-
-  const telemetry = result.data
+  const payload = telemetryPayloadSchema.parse(JSON.parse(message.toString()))
 
   const zone = await db.zone.findUnique({
     where: {
-      id: telemetry.zoneId,
+      id: payload.zoneId,
     },
     include: {
       plantProfile: true,
@@ -66,52 +31,85 @@ export async function handleTelemetryMessage(message: Buffer) {
   })
 
   if (!zone) {
-    console.warn(`Telemetry received for unknown zone: ${telemetry.zoneId}`)
+    console.warn(`Ignoring telemetry for unknown zone: ${payload.zoneId}`)
     return
   }
 
   const device = await db.device.findUnique({
     where: {
-      id: telemetry.deviceId,
+      id: payload.deviceId,
     },
   })
 
   if (!device) {
-    console.warn(`Telemetry received for unknown device: ${telemetry.deviceId}`)
+    console.warn(`Ignoring telemetry for unknown device: ${payload.deviceId}`)
     return
   }
 
-  const recordedAt = new Date(telemetry.recordedAt)
+  const recordedAt = new Date(payload.recordedAt)
 
   await db.telemetryReading.create({
     data: {
-      zoneId: telemetry.zoneId,
-      deviceId: telemetry.deviceId,
+      zoneId: payload.zoneId,
+      deviceId: payload.deviceId,
       recordedAt,
-      temperatureC: telemetry.temperatureC,
-      humidityPct: telemetry.humidityPct,
-      lightLux: telemetry.lightLux,
+      temperatureC: payload.temperatureC,
+      humidityPct: payload.humidityPct,
+      lightLux: payload.lightLux,
+      estimatedPpfd: payload.estimatedPpfd ?? null,
+      vpdKpa: payload.vpdKpa ?? null,
+      condensationMarginC: payload.condensationMarginC ?? null,
+      rawPayload: payload,
     },
   })
 
-  await db.device.update({
+  const phaseConfig = phaseConfigSchema.parse(zone.plantProfile.phaseConfig)
+
+  const evaluation = evaluateZone({
+    telemetry: {
+      temperatureC: payload.temperatureC,
+      humidityPct: payload.humidityPct,
+      lightLux: payload.lightLux,
+      estimatedPpfd: payload.estimatedPpfd,
+      vpdKpa: payload.vpdKpa,
+      condensationMarginC: payload.condensationMarginC,
+      recordedAt,
+    },
+    plantProfile: {
+      scheduleStartMinutes: zone.plantProfile.scheduleStartMinutes,
+      scheduleDurationMinutes: zone.plantProfile.scheduleDurationMinutes,
+      phaseConfig,
+    },
+  })
+
+  await db.zoneState.upsert({
     where: {
-      id: telemetry.deviceId,
+      zoneId: payload.zoneId,
     },
-    data: {
-      lastSeenAt: recordedAt,
+    update: {
+      status: zoneStatusMap[evaluation.status],
+      activePhase: zonePhaseMap[evaluation.activePhase],
+      fanDesired: evaluation.fanDesired,
+      lightDesired: evaluation.lightDesired,
+      heaterDesired: evaluation.heaterDesired,
+      reasons: evaluation.reasons,
+      lastTelemetryAt: recordedAt,
+      lastEvaluatedAt: new Date(),
+    },
+    create: {
+      zoneId: payload.zoneId,
+      status: zoneStatusMap[evaluation.status],
+      activePhase: zonePhaseMap[evaluation.activePhase],
+      fanDesired: evaluation.fanDesired,
+      lightDesired: evaluation.lightDesired,
+      heaterDesired: evaluation.heaterDesired,
+      reasons: evaluation.reasons,
+      lastTelemetryAt: recordedAt,
+      lastEvaluatedAt: new Date(),
     },
   })
 
-  const decision = evaluateZone(telemetry, zone.plantProfile)
-
-  await updateZoneState(telemetry.zoneId, decision, recordedAt)
-
-  console.log('Stored telemetry and updated zone state', {
-    zoneId: telemetry.zoneId,
-    deviceId: telemetry.deviceId,
-    status: decision.status,
-    fanDesired: decision.fanDesired,
-    lightDesired: decision.lightDesired,
-  })
+  console.log(
+    `Stored telemetry for ${payload.zoneId}: ${evaluation.status} / ${evaluation.activePhase}`,
+  )
 }

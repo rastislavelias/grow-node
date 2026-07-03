@@ -1,62 +1,238 @@
-import type { TelemetryPayload, ZoneStatus } from '@grow-node/contracts'
+import type { PhaseConfig, PhaseMetricsConfig } from '@grow-node/contracts'
 
-type PlantProfileThresholds = {
-  minTemperatureC: number
-  maxTemperatureC: number
-  minHumidityPct: number
-  maxHumidityPct: number
-  minLightLux: number
-  maxLightLux: number
+export type EvaluationStatus = 'normal' | 'warning' | 'danger'
+export type EvaluationPhase = 'lightOn' | 'lightOff'
+
+type MetricName =
+  | 'temperature'
+  | 'humidity'
+  | 'illuminance'
+  | 'estimatedPpfd'
+  | 'vpd'
+  | 'condensationMargin'
+
+type Direction = 'low' | 'high' | 'risk'
+
+export type EvaluationReason = {
+  metric: MetricName
+  status: Exclude<EvaluationStatus, 'normal'>
+  value: number
+  direction: Direction
 }
 
-export type ZoneDecision = {
-  status: ZoneStatus
+type TelemetryForEvaluation = {
+  temperatureC: number
+  humidityPct: number
+  lightLux: number
+  estimatedPpfd?: number | undefined
+  vpdKpa?: number | undefined
+  condensationMarginC?: number | undefined
+  recordedAt: Date
+}
+
+type PlantProfileForEvaluation = {
+  scheduleStartMinutes: number
+  scheduleDurationMinutes: number
+  phaseConfig: PhaseConfig
+}
+
+type EvaluateZoneInput = {
+  telemetry: TelemetryForEvaluation
+  plantProfile: PlantProfileForEvaluation
+}
+
+export type ZoneEvaluation = {
+  status: EvaluationStatus
+  activePhase: EvaluationPhase
   fanDesired: boolean
   lightDesired: boolean
-  reasons: string[]
+  heaterDesired: boolean
+  reasons: EvaluationReason[]
 }
 
-export function evaluateZone(
-  telemetry: TelemetryPayload,
-  profile: PlantProfileThresholds,
-): ZoneDecision {
-  const reasons: string[] = []
+const minutesPerDay = 24 * 60
 
-  const temperatureTooHigh = telemetry.temperatureC > profile.maxTemperatureC
-  const temperatureCritical =
-    telemetry.temperatureC > profile.maxTemperatureC + 3
+function getMinutesAfterMidnight(date: Date): number {
+  return date.getHours() * 60 + date.getMinutes()
+}
 
-  const humidityTooHigh = telemetry.humidityPct > profile.maxHumidityPct
-  const humidityTooLow = telemetry.humidityPct < profile.minHumidityPct
-
-  const lightTooLow = telemetry.lightLux < profile.minLightLux
-
-  if (temperatureTooHigh) {
-    reasons.push('temperature-too-high')
+export function getActivePhase({
+  now,
+  scheduleStartMinutes,
+  scheduleDurationMinutes,
+}: {
+  now: Date
+  scheduleStartMinutes: number
+  scheduleDurationMinutes: number
+}): EvaluationPhase {
+  if (scheduleDurationMinutes >= minutesPerDay) {
+    return 'lightOn'
   }
 
-  if (humidityTooHigh) {
-    reasons.push('humidity-too-high')
+  const currentMinutes = getMinutesAfterMidnight(now)
+  const scheduleEndMinutes =
+    (scheduleStartMinutes + scheduleDurationMinutes) % minutesPerDay
+
+  const doesScheduleCrossMidnight =
+    scheduleStartMinutes + scheduleDurationMinutes >= minutesPerDay
+
+  const isLightOn = doesScheduleCrossMidnight
+    ? currentMinutes >= scheduleStartMinutes ||
+      currentMinutes < scheduleEndMinutes
+    : currentMinutes >= scheduleStartMinutes &&
+      currentMinutes < scheduleEndMinutes
+
+  return isLightOn ? 'lightOn' : 'lightOff'
+}
+
+function evaluateRangeMetric({
+  metric,
+  value,
+  optimal,
+  warning,
+}: {
+  metric: MetricName
+  value: number
+  optimal: [number, number]
+  warning: [number, number]
+}): EvaluationReason | null {
+  if (value >= optimal[0] && value <= optimal[1]) {
+    return null
   }
 
-  if (humidityTooLow) {
-    reasons.push('humidity-too-low')
+  const direction: Direction = value < optimal[0] ? 'low' : 'high'
+
+  if (value >= warning[0] && value <= warning[1]) {
+    return {
+      metric,
+      status: 'warning',
+      value,
+      direction,
+    }
   }
 
-  if (lightTooLow) {
-    reasons.push('light-too-low')
+  return {
+    metric,
+    status: 'danger',
+    value,
+    direction,
+  }
+}
+
+function evaluateCondensationMargin(
+  value: number | undefined,
+  phaseConfig: PhaseMetricsConfig,
+): EvaluationReason | null {
+  if (value === undefined) {
+    return null
   }
 
-  const status: ZoneStatus = temperatureCritical
-    ? 'critical'
-    : reasons.length > 0
-      ? 'warning'
-      : 'normal'
+  const config = phaseConfig.condensationMargin
+
+  if (value >= config.lowRiskMin) {
+    return null
+  }
+
+  if (value >= config.mediumRiskMin) {
+    return {
+      metric: 'condensationMargin',
+      status: 'warning',
+      value,
+      direction: 'risk',
+    }
+  }
+
+  return {
+    metric: 'condensationMargin',
+    status: 'danger',
+    value,
+    direction: 'risk',
+  }
+}
+
+function getOverallStatus(reasons: EvaluationReason[]): EvaluationStatus {
+  if (reasons.some((reason) => reason.status === 'danger')) {
+    return 'danger'
+  }
+
+  if (reasons.some((reason) => reason.status === 'warning')) {
+    return 'warning'
+  }
+
+  return 'normal'
+}
+
+export function evaluateZone({
+  telemetry,
+  plantProfile,
+}: EvaluateZoneInput): ZoneEvaluation {
+  const activePhase = getActivePhase({
+    now: telemetry.recordedAt,
+    scheduleStartMinutes: plantProfile.scheduleStartMinutes,
+    scheduleDurationMinutes: plantProfile.scheduleDurationMinutes,
+  })
+
+  const phaseConfig = plantProfile.phaseConfig[activePhase]
+
+  const reasons = [
+    evaluateRangeMetric({
+      metric: 'temperature',
+      value: telemetry.temperatureC,
+      optimal: phaseConfig.temperature.optimal,
+      warning: phaseConfig.temperature.warning,
+    }),
+    evaluateRangeMetric({
+      metric: 'humidity',
+      value: telemetry.humidityPct,
+      optimal: phaseConfig.humidity.optimal,
+      warning: phaseConfig.humidity.warning,
+    }),
+    evaluateRangeMetric({
+      metric: 'illuminance',
+      value: telemetry.lightLux,
+      optimal: phaseConfig.illuminance.optimal,
+      warning: phaseConfig.illuminance.warning,
+    }),
+    telemetry.estimatedPpfd === undefined
+      ? null
+      : evaluateRangeMetric({
+          metric: 'estimatedPpfd',
+          value: telemetry.estimatedPpfd,
+          optimal: phaseConfig.estimatedPpfd.optimal,
+          warning: phaseConfig.estimatedPpfd.warning,
+        }),
+    telemetry.vpdKpa === undefined
+      ? null
+      : evaluateRangeMetric({
+          metric: 'vpd',
+          value: telemetry.vpdKpa,
+          optimal: phaseConfig.vpd.optimal,
+          warning: phaseConfig.vpd.warning,
+        }),
+    evaluateCondensationMargin(telemetry.condensationMarginC, phaseConfig),
+  ].filter((reason): reason is EvaluationReason => reason !== null)
+
+  const status = getOverallStatus(reasons)
+
+  const fanDesired = reasons.some((reason) => {
+    return (
+      (reason.metric === 'temperature' && reason.direction === 'high') ||
+      (reason.metric === 'humidity' && reason.direction === 'high') ||
+      reason.metric === 'condensationMargin' ||
+      (reason.metric === 'vpd' && reason.direction === 'low')
+    )
+  })
+
+  const heaterDesired = reasons.some((reason) => {
+    return reason.metric === 'temperature' && reason.direction === 'low'
+  })
 
   return {
     status,
-    fanDesired: temperatureTooHigh || humidityTooHigh,
-    lightDesired: lightTooLow,
+    activePhase,
+    fanDesired,
+    lightDesired: activePhase === 'lightOn',
+    heaterDesired,
     reasons,
   }
 }

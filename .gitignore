@@ -9,6 +9,7 @@ node_modules
 # build outputs
 .next
 dist
+**/dist
 build
 coverage
 .turbo

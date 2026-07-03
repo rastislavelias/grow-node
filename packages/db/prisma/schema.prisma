@@ -20,7 +20,12 @@ enum DeviceStatus {
 enum ZoneStatus {
   NORMAL
   WARNING
-  CRITICAL
+  DANGER
+}
+
+enum ZonePhase {
+  LIGHT_ON
+  LIGHT_OFF
 }
 
 enum CommandSource {
@@ -44,14 +49,9 @@ model PlantProfile {
 
   name String @unique
 
-  minTemperatureC Float
-  maxTemperatureC Float
-
-  minHumidityPct Float
-  maxHumidityPct Float
-
-  minLightLux Float
-  maxLightLux Float
+  scheduleStartMinutes    Int
+  scheduleDurationMinutes Int
+  phaseConfig             Json
 
   zones Zone[]
 
@@ -112,6 +112,10 @@ model TelemetryReading {
   humidityPct  Float
   lightLux     Float
 
+  estimatedPpfd       Float?
+  vpdKpa              Float?
+  condensationMarginC Float?
+
   rawPayload Json?
 
   createdAt DateTime @default(now())
@@ -126,10 +130,14 @@ model ZoneState {
   zoneId String @unique
   zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
-  status ZoneStatus @default(NORMAL)
+  status      ZoneStatus @default(NORMAL)
+  activePhase ZonePhase  @default(LIGHT_OFF)
 
-  fanDesired   Boolean @default(false)
-  lightDesired Boolean @default(false)
+  fanDesired    Boolean @default(false)
+  lightDesired  Boolean @default(false)
+  heaterDesired Boolean @default(false)
+
+  reasons Json?
 
   lastTelemetryAt DateTime?
   lastEvaluatedAt DateTime?

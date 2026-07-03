@@ -8,10 +8,25 @@ describe('telemetryPayloadSchema', () => {
       zoneId: 'zone-1',
       deviceId: 'device-1',
       temperatureC: 24.5,
-      humidityPct: 61,
-      soilMoisturePct: 42,
-      lightLux: 380,
-      recordedAt: '2026-07-02T12:00:00.000Z',
+      humidityPct: 92,
+      lightLux: 2500,
+      recordedAt: new Date().toISOString(),
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts optional derived metrics', () => {
+    const result = telemetryPayloadSchema.safeParse({
+      zoneId: 'zone-1',
+      deviceId: 'device-1',
+      temperatureC: 24.5,
+      humidityPct: 92,
+      lightLux: 2500,
+      estimatedPpfd: 55,
+      vpdKpa: 0.25,
+      condensationMarginC: 2,
+      recordedAt: new Date().toISOString(),
     })
 
     expect(result.success).toBe(true)
@@ -22,10 +37,23 @@ describe('telemetryPayloadSchema', () => {
       zoneId: 'zone-1',
       deviceId: 'device-1',
       temperatureC: 24.5,
-      humidityPct: 150,
-      soilMoisturePct: 42,
-      lightLux: 380,
-      recordedAt: '2026-07-02T12:00:00.000Z',
+      humidityPct: 120,
+      lightLux: 2500,
+      recordedAt: new Date().toISOString(),
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects unknown extra fields', () => {
+    const result = telemetryPayloadSchema.safeParse({
+      zoneId: 'zone-1',
+      deviceId: 'device-1',
+      temperatureC: 24.5,
+      humidityPct: 92,
+      lightLux: 2500,
+      recordedAt: new Date().toISOString(),
+      soilMoisturePct: 50,
     })
 
     expect(result.success).toBe(false)

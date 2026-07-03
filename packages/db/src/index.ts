@@ -8,6 +8,7 @@ export {
   DeviceType,
   PrismaClient,
   ZoneStatus,
+  ZonePhase,
 } from './generated/prisma/client.js'
 
 export type {

@@ -39,8 +39,14 @@ export async function registerZoneRoutes(app: FastifyInstance) {
         state: zone.state
           ? {
               status: zone.state.status.toLowerCase(),
+              activePhase:
+                zone.state.activePhase === 'LIGHT_ON' ? 'lightOn' : 'lightOff',
               fanDesired: zone.state.fanDesired,
               lightDesired: zone.state.lightDesired,
+              heaterDesired: zone.state.heaterDesired,
+              reasons: Array.isArray(zone.state.reasons)
+                ? zone.state.reasons
+                : [],
               lastTelemetryAt:
                 zone.state.lastTelemetryAt?.toISOString() ?? null,
               lastEvaluatedAt:
@@ -57,6 +63,10 @@ export async function registerZoneRoutes(app: FastifyInstance) {
               temperatureC: zone.telemetryReadings[0].temperatureC,
               humidityPct: zone.telemetryReadings[0].humidityPct,
               lightLux: zone.telemetryReadings[0].lightLux,
+              estimatedPpfd: zone.telemetryReadings[0].estimatedPpfd,
+              vpdKpa: zone.telemetryReadings[0].vpdKpa,
+              condensationMarginC:
+                zone.telemetryReadings[0].condensationMarginC,
               recordedAt: zone.telemetryReadings[0].recordedAt.toISOString(),
             }
           : null,

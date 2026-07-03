@@ -46,6 +46,21 @@ export {
 export {
   zonesResponseSchema,
   zoneOverviewSchema,
+  zoneStateReasonSchema,
   type ZoneOverview,
   type ZonesResponse,
+  type ZoneStateReason,
 } from './api/zones.js'
+
+export {
+  condensationMarginConfigSchema,
+  metricRangeConfigSchema,
+  numericRangeSchema,
+  phaseConfigSchema,
+  phaseMetricsConfigSchema,
+  type CondensationMarginConfig,
+  type MetricRangeConfig,
+  type NumericRange,
+  type PhaseConfig,
+  type PhaseMetricsConfig,
+} from './profiles/phase-config.js'

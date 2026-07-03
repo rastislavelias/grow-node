@@ -28,7 +28,7 @@ export default async function Home() {
   }, 0)
 
   const zonesNeedingAttention = zones.filter((zone) => {
-    return zone.state?.status === 'warning' || zone.state?.status === 'critical'
+    return zone.state?.status === 'warning' || zone.state?.status === 'danger'
   }).length
 
   const latestTelemetryTime =
@@ -115,6 +115,34 @@ export default async function Home() {
                 </CardHeader>
 
                 <CardContent className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-muted-foreground text-sm">Phase</p>
+                    <p className="font-medium">
+                      {zone.state?.activePhase === 'lightOn'
+                        ? 'Light on'
+                        : 'Light off'}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-muted-foreground text-sm">
+                      Heater desired
+                    </p>
+                    <p className="font-medium">
+                      {zone.state?.heaterDesired ? 'On' : 'Off'}
+                    </p>
+                  </div>
+
+                  {zone.state?.reasons.length ? (
+                    <div className="md:col-span-2">
+                      <p className="text-muted-foreground text-sm">Reasons</p>
+                      <p className="font-medium">
+                        {zone.state.reasons
+                          .map((reason) => `${reason.metric}: ${reason.status}`)
+                          .join(', ')}
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="flex items-center gap-3">
                     <ThermometerIcon className="size-5" />
                     <div>
@@ -189,7 +217,7 @@ function formatDate(value: string | null): string {
 function getStatusVariant(
   status: string | null,
 ): 'default' | 'secondary' | 'destructive' {
-  if (status === 'critical') {
+  if (status === 'danger') {
     return 'destructive'
   }
 

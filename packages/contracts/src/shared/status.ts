@@ -11,5 +11,8 @@ export const commandStatusSchema = z.enum([
 ])
 export type CommandStatus = z.infer<typeof commandStatusSchema>
 
-export const zoneStatusSchema = z.enum(['normal', 'warning', 'critical'])
+export const zoneStatusSchema = z.enum(['normal', 'warning', 'danger'])
 export type ZoneStatus = z.infer<typeof zoneStatusSchema>
+
+export const zonePhaseSchema = z.enum(['lightOn', 'lightOff'])
+export type ZonePhase = z.infer<typeof zonePhaseSchema>
