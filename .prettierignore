@@ -13,3 +13,4 @@ firmware/grow-node-zone/.pio
 firmware/grow-node-zone/.vscode
 
 packages/db/src/generated
+apps/dashboard/next-env.d.ts
