@@ -150,7 +150,27 @@ export default async function Page({
             </ItemGroup>
           </section>
 
+          <section>
+            {zone.state?.reasons?.length && zone.state.reasons.length > 0 ? (
+              <ul className="space-y-2">
+                {zone.state?.reasons.map((reason) => (
+                  <li key={reason.metric}>{reason.metric}</li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+
           <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Phase</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">
+                  {latest ? `${zone.state?.activePhase}` : 'No data'}
+                </p>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle>Temperature</CardTitle>
@@ -187,6 +207,26 @@ export default async function Page({
                 </p>
                 <p className="text-muted-foreground text-sm">
                   PPFD: {latest?.estimatedPpfd ?? 'No data'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>VPD</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">
+                  {latest ? `${latest.vpdKpa} kPa` : 'No data'}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>Condensation margin</CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">
+                  {latest ? `${latest.condensationMarginC}°C` : 'No data'}
                 </p>
               </CardContent>
             </Card>
