@@ -25,11 +25,11 @@ export {
 } from './mqtt/command-ack.js'
 
 export {
-  deviceStatusSchema,
-  commandStatusSchema,
+  controllerStatusSchema,
+  zonePhaseSchema,
   zoneStatusSchema,
-  type DeviceStatus,
-  type CommandStatus,
+  type ControllerStatus,
+  type ZonePhase,
   type ZoneStatus,
 } from './shared/status.js'
 

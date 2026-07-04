@@ -47,7 +47,7 @@ export default async function Home() {
               <ZoneOverviewCard
                 key={zone.id}
                 zone={zone}
-                staleAfterMs={health.devices.staleAfterMs}
+                staleAfterMs={health.controllers.staleAfterMs}
               />
             ))}
           </section>

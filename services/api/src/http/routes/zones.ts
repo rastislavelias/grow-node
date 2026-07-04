@@ -18,11 +18,6 @@ export async function registerZoneRoutes(app: FastifyInstance) {
       },
       include: {
         state: true,
-        devices: {
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
         telemetryReadings: {
           orderBy: {
             recordedAt: 'desc',
@@ -36,6 +31,11 @@ export async function registerZoneRoutes(app: FastifyInstance) {
       zones: zones.map((zone) => ({
         id: zone.id,
         name: zone.name,
+        controller: {
+          type: zone.controllerType.toLowerCase() as 'esp32' | 'simulator',
+          firmwareVersion: zone.controllerFirmwareVersion,
+          lastSeenAt: zone.controllerLastSeenAt?.toISOString() ?? null,
+        },
         state: zone.state
           ? {
               status: zone.state.status.toLowerCase(),
@@ -53,11 +53,6 @@ export async function registerZoneRoutes(app: FastifyInstance) {
                 zone.state.lastEvaluatedAt?.toISOString() ?? null,
             }
           : null,
-        devices: zone.devices.map((device) => ({
-          id: device.id,
-          name: device.name,
-          lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
-        })),
         latestTelemetry: zone.telemetryReadings[0]
           ? {
               temperatureC: zone.telemetryReadings[0].temperatureC,
@@ -90,11 +85,6 @@ export async function registerZoneRoutes(app: FastifyInstance) {
       include: {
         plantProfile: true,
         state: true,
-        devices: {
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
       },
     })
 

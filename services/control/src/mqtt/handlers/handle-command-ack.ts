@@ -1,49 +1,29 @@
 import { commandAckPayloadSchema } from '@grow-node/contracts'
-import { CommandStatus, db } from '@grow-node/db'
+import { CommandStatus as DbCommandStatus, db } from '@grow-node/db'
 
-import { parseJson } from '../../utils/parse-json.js'
-
-function toDbCommandStatus(status: 'acknowledged' | 'failed'): CommandStatus {
-  switch (status) {
-    case 'acknowledged':
-      return CommandStatus.ACKNOWLEDGED
-    case 'failed':
-      return CommandStatus.FAILED
-  }
-}
+const commandStatusMap = {
+  acknowledged: DbCommandStatus.ACKNOWLEDGED,
+  failed: DbCommandStatus.FAILED,
+} as const
 
 export async function handleCommandAckMessage(message: Buffer) {
-  const parsedJson = parseJson(message)
-  const result = commandAckPayloadSchema.safeParse(parsedJson)
+  const payload = commandAckPayloadSchema.parse(JSON.parse(message.toString()))
 
-  if (!result.success) {
-    console.error(
-      'Invalid command acknowledgement payload',
-      result.error.flatten(),
-    )
+  const result = await db.command.updateMany({
+    where: {
+      id: payload.commandId,
+      zoneId: payload.zoneId,
+    },
+    data: {
+      status: commandStatusMap[payload.status],
+      acknowledgedAt: new Date(payload.acknowledgedAt),
+    },
+  })
+
+  if (result.count === 0) {
+    console.warn(`Ignoring ack for unknown command: ${payload.commandId}`)
     return
   }
 
-  const acknowledgement = result.data
-
-  try {
-    await db.command.update({
-      where: {
-        id: acknowledgement.commandId,
-      },
-      data: {
-        status: toDbCommandStatus(acknowledgement.status),
-        acknowledgedAt: new Date(acknowledgement.acknowledgedAt),
-      },
-    })
-
-    console.log('Updated command acknowledgement', {
-      commandId: acknowledgement.commandId,
-      status: acknowledgement.status,
-    })
-  } catch {
-    console.warn(
-      `Command acknowledgement received for unknown command: ${acknowledgement.commandId}`,
-    )
-  }
+  console.log(`Stored command ack for ${payload.commandId}`)
 }

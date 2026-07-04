@@ -14,6 +14,11 @@ export const zoneStateReasonSchema = z
 export const zoneOverviewSchema = z.object({
   id: z.string(),
   name: z.string(),
+  controller: z.object({
+    type: z.enum(['esp32', 'simulator']),
+    firmwareVersion: z.string().nullable(),
+    lastSeenAt: z.string().nullable(),
+  }),
   state: z
     .object({
       status: zoneStatusSchema,
@@ -26,13 +31,6 @@ export const zoneOverviewSchema = z.object({
       lastEvaluatedAt: z.string().nullable(),
     })
     .nullable(),
-  devices: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      lastSeenAt: z.string().nullable(),
-    }),
-  ),
   latestTelemetry: z
     .object({
       temperatureC: z.number(),

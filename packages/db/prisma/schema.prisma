@@ -7,12 +7,12 @@ datasource db {
   provider = "postgresql"
 }
 
-enum DeviceType {
+enum ControllerType {
   ESP32
   SIMULATOR
 }
 
-enum DeviceStatus {
+enum ControllerStatus {
   ONLINE
   OFFLINE
 }
@@ -67,34 +67,17 @@ model Zone {
   plantProfileId String
   plantProfile   PlantProfile @relation(fields: [plantProfileId], references: [id])
 
-  devices           Device[]
+  controllerType            ControllerType
+  controllerFirmwareVersion String?
+  controllerLastSeenAt      DateTime?
+
   telemetryReadings TelemetryReading[]
   commands          Command[]
+  heartbeats        ControllerHeartbeat[]
   state             ZoneState?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Device {
-  id String @id
-
-  zoneId String
-  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  name            String
-  type            DeviceType
-  firmwareVersion String?
-  lastSeenAt      DateTime?
-
-  telemetryReadings TelemetryReading[]
-  commands          Command[]
-  heartbeats        DeviceHeartbeat[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([zoneId])
 }
 
 model TelemetryReading {
@@ -102,9 +85,6 @@ model TelemetryReading {
 
   zoneId String
   zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   recordedAt DateTime
 
@@ -121,7 +101,6 @@ model TelemetryReading {
   createdAt DateTime @default(now())
 
   @@index([zoneId, recordedAt])
-  @@index([deviceId, recordedAt])
 }
 
 model ZoneState {
@@ -151,9 +130,6 @@ model Command {
   zoneId String
   zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-
   source CommandSource
   type   CommandType
   status CommandStatus @default(PENDING)
@@ -165,20 +141,20 @@ model Command {
   acknowledgedAt DateTime?
 
   @@index([zoneId, createdAt])
-  @@index([deviceId, createdAt])
   @@index([status])
 }
 
-model DeviceHeartbeat {
+model ControllerHeartbeat {
   id String @id @default(cuid())
 
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
-  seenAt DateTime
-  status DeviceStatus
+  seenAt          DateTime
+  status          ControllerStatus
+  firmwareVersion String?
 
   createdAt DateTime @default(now())
 
-  @@index([deviceId, seenAt])
+  @@index([zoneId, seenAt])
 }

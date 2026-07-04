@@ -1,4 +1,4 @@
-import { db, DeviceType, ZonePhase, ZoneStatus } from '../src/index.js'
+import { ControllerType, db, ZonePhase, ZoneStatus } from '../src/index.js'
 
 const anubiasPhaseConfig = {
   lightOn: {
@@ -74,18 +74,14 @@ const anubiasPhaseConfig = {
 async function upsertZone({
   zoneId,
   zoneName,
-  deviceId,
-  deviceName,
-  deviceType,
-  firmwareVersion,
+  controllerType,
+  controllerFirmwareVersion,
   plantProfileId,
 }: {
   zoneId: string
   zoneName: string
-  deviceId: string
-  deviceName: string
-  deviceType: DeviceType
-  firmwareVersion: string
+  controllerType: ControllerType
+  controllerFirmwareVersion: string
   plantProfileId: string
 }) {
   const zone = await db.zone.upsert({
@@ -95,30 +91,15 @@ async function upsertZone({
     update: {
       name: zoneName,
       plantProfileId,
+      controllerType,
+      controllerFirmwareVersion,
     },
     create: {
       id: zoneId,
       name: zoneName,
       plantProfileId,
-    },
-  })
-
-  await db.device.upsert({
-    where: {
-      id: deviceId,
-    },
-    update: {
-      zoneId: zone.id,
-      name: deviceName,
-      type: deviceType,
-      firmwareVersion,
-    },
-    create: {
-      id: deviceId,
-      zoneId: zone.id,
-      name: deviceName,
-      type: deviceType,
-      firmwareVersion,
+      controllerType,
+      controllerFirmwareVersion,
     },
   })
 
@@ -167,20 +148,16 @@ async function main() {
   await upsertZone({
     zoneId: 'zone-1',
     zoneName: 'Anubias Zone 1',
-    deviceId: 'device-1',
-    deviceName: 'Simulator Device 1',
-    deviceType: DeviceType.SIMULATOR,
-    firmwareVersion: 'simulator-0.1.0',
+    controllerType: ControllerType.SIMULATOR,
+    controllerFirmwareVersion: 'simulator-0.1.0',
     plantProfileId: plantProfile.id,
   })
 
   await upsertZone({
     zoneId: 'zone-2',
     zoneName: 'Anubias Zone 2',
-    deviceId: 'device-2',
-    deviceName: 'ESP32 Device 2',
-    deviceType: DeviceType.ESP32,
-    firmwareVersion: 'esp32-0.1.0',
+    controllerType: ControllerType.ESP32,
+    controllerFirmwareVersion: 'esp32-0.1.0',
     plantProfileId: plantProfile.id,
   })
 

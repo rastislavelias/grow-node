@@ -99,16 +99,12 @@ function isRecentlySeen(value: string | null, staleAfterMs: number): boolean {
   return Date.now() - new Date(value).getTime() <= staleAfterMs
 }
 
-function getDeviceSummary(zone: ZoneOverview, staleAfterMs: number) {
-  const onlineDevices = zone.devices.filter((device) => {
-    return isRecentlySeen(device.lastSeenAt, staleAfterMs)
-  }).length
-
-  return {
-    onlineDevices,
-    totalDevices: zone.devices.length,
-    hasOnlineDevice: onlineDevices > 0,
+function getControllerLabel(type: ZoneOverview['controller']['type']): string {
+  if (type === 'esp32') {
+    return 'ESP32'
   }
+
+  return 'Simulator'
 }
 
 export function ZoneOverviewCard({
@@ -116,7 +112,10 @@ export function ZoneOverviewCard({
   staleAfterMs,
 }: ZoneOverviewCardProps) {
   const status = getZoneStatus(zone)
-  const deviceSummary = getDeviceSummary(zone, staleAfterMs)
+  const controllerOnline = isRecentlySeen(
+    zone.controller.lastSeenAt,
+    staleAfterMs,
+  )
   const isLightOn = zone.state?.activePhase === 'lightOn'
 
   return (
@@ -153,16 +152,17 @@ export function ZoneOverviewCard({
         </div>
 
         <div className="flex items-center gap-3">
-          {deviceSummary.hasOnlineDevice ? (
+          {controllerOnline ? (
             <WifiIcon className="text-muted-foreground size-4" />
           ) : (
             <WifiOffIcon className="text-muted-foreground size-4" />
           )}
 
           <div>
-            <p className="text-muted-foreground text-sm">Devices</p>
+            <p className="text-muted-foreground text-sm">Controller</p>
             <p className="font-medium">
-              {deviceSummary.onlineDevices}/{deviceSummary.totalDevices} online
+              {getControllerLabel(zone.controller.type)} ·{' '}
+              {controllerOnline ? 'Online' : 'Offline'}
             </p>
           </div>
         </div>

@@ -26,7 +26,6 @@ export function handleCommandMessage(client: MqttClient, message: Buffer) {
   const acknowledgement: CommandAckPayload = {
     commandId: command.commandId,
     zoneId: command.zoneId,
-    deviceId: command.deviceId,
     status: 'acknowledged',
     acknowledgedAt: new Date().toISOString(),
   }

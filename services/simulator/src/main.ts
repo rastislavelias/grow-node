@@ -13,9 +13,8 @@ import {
   createTelemetry,
 } from './telemetry/create-telemetry.js'
 
-const simulatedDevice = {
+const simulatedZone = {
   zoneId: 'zone-1',
-  deviceId: 'device-1',
   firmwareVersion: 'simulator-0.1.0',
 } as const
 
@@ -24,7 +23,7 @@ const client = mqtt.connect(env.MQTT_URL)
 client.on('connect', () => {
   console.log(`Simulator connected to ${env.MQTT_URL}`)
 
-  const commandTopic = mqttTopics.commands(simulatedDevice.zoneId)
+  const commandTopic = mqttTopics.commands(simulatedZone.zoneId)
 
   client.subscribe(commandTopic, (error) => {
     if (error) {
@@ -37,19 +36,19 @@ client.on('connect', () => {
 
   setInterval(() => {
     const telemetry = telemetryPayloadSchema.parse(
-      createTelemetry(simulatedDevice),
+      createTelemetry(simulatedZone),
     )
     const heartbeat = heartbeatPayloadSchema.parse(
-      createHeartbeat(simulatedDevice),
+      createHeartbeat(simulatedZone),
     )
 
     client.publish(
-      mqttTopics.telemetry(simulatedDevice.zoneId),
+      mqttTopics.telemetry(simulatedZone.zoneId),
       JSON.stringify(telemetry),
     )
 
     client.publish(
-      mqttTopics.heartbeat(simulatedDevice.zoneId),
+      mqttTopics.heartbeat(simulatedZone.zoneId),
       JSON.stringify(heartbeat),
     )
 
@@ -59,7 +58,7 @@ client.on('connect', () => {
 })
 
 client.on('message', (topic, message) => {
-  if (topic === mqttTopics.commands(simulatedDevice.zoneId)) {
+  if (topic === mqttTopics.commands(simulatedZone.zoneId)) {
     handleCommandMessage(client, message)
   }
 })

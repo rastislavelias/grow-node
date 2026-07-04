@@ -36,17 +36,17 @@ export async function registerHealthRoutes(app: FastifyInstance) {
 
     const heartbeatCutoff = new Date(Date.now() - env.HEARTBEAT_STALE_MS)
 
-    const [totalDevices, recentlySeenDevices, latestHeartbeat] =
+    const [totalControllers, recentlySeenControllers, latestHeartbeat] =
       await Promise.all([
-        db.device.count(),
-        db.device.count({
+        db.zone.count(),
+        db.zone.count({
           where: {
-            lastSeenAt: {
+            controllerLastSeenAt: {
               gte: heartbeatCutoff,
             },
           },
         }),
-        db.deviceHeartbeat.findFirst({
+        db.controllerHeartbeat.findFirst({
           orderBy: {
             seenAt: 'desc',
           },
@@ -56,21 +56,22 @@ export async function registerHealthRoutes(app: FastifyInstance) {
     const allDependenciesOk =
       database === 'ok' && mqtt === 'ok' && control === 'ok'
 
-    const allDevicesRecentlySeen =
-      totalDevices > 0 && recentlySeenDevices === totalDevices
+    const allControllersRecentlySeen =
+      totalControllers > 0 && recentlySeenControllers === totalControllers
 
     const response = {
       service: 'api',
-      status: allDependenciesOk && allDevicesRecentlySeen ? 'ok' : 'degraded',
+      status:
+        allDependenciesOk && allControllersRecentlySeen ? 'ok' : 'degraded',
       checkedAt: new Date().toISOString(),
       dependencies: {
         database,
         mqtt,
         control,
       },
-      devices: {
-        total: totalDevices,
-        recentlySeen: recentlySeenDevices,
+      controllers: {
+        total: totalControllers,
+        recentlySeen: recentlySeenControllers,
         lastHeartbeatAt: latestHeartbeat?.seenAt.toISOString() ?? null,
         staleAfterMs: env.HEARTBEAT_STALE_MS,
       },

@@ -7,11 +7,11 @@ describe('commandPayloadSchema', () => {
     const result = commandPayloadSchema.safeParse({
       commandId: 'cmd-1',
       zoneId: 'zone-1',
-      deviceId: 'device-1',
       type: 'set-output',
       payload: {
         fan: true,
         light: false,
+        heater: false,
       },
       createdAt: '2026-07-02T12:00:05.000Z',
     })
@@ -23,11 +23,11 @@ describe('commandPayloadSchema', () => {
     const result = commandPayloadSchema.safeParse({
       commandId: 'cmd-1',
       zoneId: 'zone-1',
-      deviceId: 'device-1',
       type: 'set-output',
       payload: {
         fan: 'yes',
         light: false,
+        heater: false,
       },
       createdAt: '2026-07-02T12:00:05.000Z',
     })

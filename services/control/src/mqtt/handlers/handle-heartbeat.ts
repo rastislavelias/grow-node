@@ -1,74 +1,47 @@
 import { heartbeatPayloadSchema } from '@grow-node/contracts'
-import { db, DeviceStatus, DeviceType } from '@grow-node/db'
+import { ControllerStatus as DbControllerStatus, db } from '@grow-node/db'
 
-import { parseJson } from '../../utils/parse-json.js'
-
-function toDbDeviceStatus(status: 'online' | 'offline'): DeviceStatus {
-  switch (status) {
-    case 'online':
-      return DeviceStatus.ONLINE
-    case 'offline':
-      return DeviceStatus.OFFLINE
-  }
-}
+const controllerStatusMap = {
+  online: DbControllerStatus.ONLINE,
+  offline: DbControllerStatus.OFFLINE,
+} as const
 
 export async function handleHeartbeatMessage(message: Buffer) {
-  const parsedJson = parseJson(message)
-  const result = heartbeatPayloadSchema.safeParse(parsedJson)
-
-  if (!result.success) {
-    console.error('Invalid heartbeat payload', result.error.flatten())
-    return
-  }
-
-  const heartbeat = result.data
+  const payload = heartbeatPayloadSchema.parse(JSON.parse(message.toString()))
 
   const zone = await db.zone.findUnique({
     where: {
-      id: heartbeat.zoneId,
-    },
-    select: {
-      id: true,
+      id: payload.zoneId,
     },
   })
 
   if (!zone) {
-    console.warn(`Heartbeat received for unknown zone: ${heartbeat.zoneId}`)
+    console.warn(`Ignoring heartbeat for unknown zone: ${payload.zoneId}`)
     return
   }
 
-  const seenAt = new Date(heartbeat.seenAt)
+  const seenAt = new Date(payload.seenAt)
 
-  await db.device.upsert({
-    where: {
-      id: heartbeat.deviceId,
-    },
-    update: {
-      zoneId: heartbeat.zoneId,
-      firmwareVersion: heartbeat.firmwareVersion,
-      lastSeenAt: seenAt,
-    },
-    create: {
-      id: heartbeat.deviceId,
-      zoneId: heartbeat.zoneId,
-      name: `Device ${heartbeat.deviceId}`,
-      type: DeviceType.SIMULATOR,
-      firmwareVersion: heartbeat.firmwareVersion,
-      lastSeenAt: seenAt,
-    },
-  })
+  await db.$transaction([
+    db.zone.update({
+      where: {
+        id: payload.zoneId,
+      },
+      data: {
+        controllerLastSeenAt: seenAt,
+        controllerFirmwareVersion:
+          payload.firmwareVersion ?? zone.controllerFirmwareVersion,
+      },
+    }),
+    db.controllerHeartbeat.create({
+      data: {
+        zoneId: payload.zoneId,
+        seenAt,
+        status: controllerStatusMap[payload.status],
+        firmwareVersion: payload.firmwareVersion ?? null,
+      },
+    }),
+  ])
 
-  await db.deviceHeartbeat.create({
-    data: {
-      deviceId: heartbeat.deviceId,
-      seenAt,
-      status: toDbDeviceStatus(heartbeat.status),
-    },
-  })
-
-  console.log('Stored heartbeat', {
-    zoneId: heartbeat.zoneId,
-    deviceId: heartbeat.deviceId,
-    status: heartbeat.status,
-  })
+  console.log(`Stored heartbeat for ${payload.zoneId}`)
 }

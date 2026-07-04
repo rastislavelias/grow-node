@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-export const deviceStatusSchema = z.enum(['online', 'offline'])
-export type DeviceStatus = z.infer<typeof deviceStatusSchema>
+export const controllerStatusSchema = z.enum(['online', 'offline'])
+export type ControllerStatus = z.infer<typeof controllerStatusSchema>
 
 export const commandStatusSchema = z.enum([
   'pending',

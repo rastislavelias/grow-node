@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { manualCommandRequestSchema } from '../src/index.js'
 
 describe('manualCommandRequestSchema', () => {
-  it('accepts a valid manual fan and light command', () => {
+  it('accepts a valid manual output command', () => {
     const result = manualCommandRequestSchema.safeParse({
       fan: true,
       light: false,
+      heater: false,
     })
 
     expect(result.success).toBe(true)
@@ -15,6 +16,7 @@ describe('manualCommandRequestSchema', () => {
   it('rejects missing fan value', () => {
     const result = manualCommandRequestSchema.safeParse({
       light: false,
+      heater: false,
     })
 
     expect(result.success).toBe(false)
@@ -24,6 +26,7 @@ describe('manualCommandRequestSchema', () => {
     const result = manualCommandRequestSchema.safeParse({
       fan: 'true',
       light: false,
+      heater: false,
     })
 
     expect(result.success).toBe(false)
@@ -33,6 +36,7 @@ describe('manualCommandRequestSchema', () => {
     const result = manualCommandRequestSchema.safeParse({
       fan: true,
       light: false,
+      heater: false,
       pump: true,
     })
 

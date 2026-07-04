@@ -11,7 +11,7 @@ export const systemHealthResponseSchema = z.object({
     mqtt: healthDependencyStatusSchema,
     control: healthDependencyStatusSchema,
   }),
-  devices: z.object({
+  controllers: z.object({
     total: z.number().int().nonnegative(),
     recentlySeen: z.number().int().nonnegative(),
     lastHeartbeatAt: z.iso.datetime().nullable(),

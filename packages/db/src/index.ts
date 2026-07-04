@@ -4,17 +4,16 @@ export {
   CommandSource,
   CommandStatus,
   CommandType,
-  DeviceStatus,
-  DeviceType,
+  ControllerStatus,
+  ControllerType,
   PrismaClient,
-  ZoneStatus,
   ZonePhase,
+  ZoneStatus,
 } from './generated/prisma/client.js'
 
 export type {
   Command,
-  Device,
-  DeviceHeartbeat,
+  ControllerHeartbeat,
   PlantProfile,
   TelemetryReading,
   Zone,

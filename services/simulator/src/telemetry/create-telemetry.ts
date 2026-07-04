@@ -1,8 +1,7 @@
 import type { HeartbeatPayload, TelemetryPayload } from '@grow-node/contracts'
 
-type SimulatedDevice = {
+type SimulatedZone = {
   zoneId: string
-  deviceId: string
   firmwareVersion: string
 }
 
@@ -33,14 +32,13 @@ function isLightOn(date: Date): boolean {
         currentMinutes < scheduleEndMinutes
 }
 
-export function createTelemetry(device: SimulatedDevice): TelemetryPayload {
+export function createTelemetry(zone: SimulatedZone): TelemetryPayload {
   const recordedAt = new Date()
   const lightOn = isLightOn(recordedAt)
 
   if (lightOn) {
     return {
-      zoneId: device.zoneId,
-      deviceId: device.deviceId,
+      zoneId: zone.zoneId,
       temperatureC: randomBetween(22.5, 26),
       humidityPct: randomBetween(88, 95),
       lightLux: randomBetween(1800, 4500),
@@ -52,8 +50,7 @@ export function createTelemetry(device: SimulatedDevice): TelemetryPayload {
   }
 
   return {
-    zoneId: device.zoneId,
-    deviceId: device.deviceId,
+    zoneId: zone.zoneId,
     temperatureC: randomBetween(20, 24),
     humidityPct: randomBetween(90, 97),
     lightLux: randomBetween(0, 10),
@@ -64,12 +61,11 @@ export function createTelemetry(device: SimulatedDevice): TelemetryPayload {
   }
 }
 
-export function createHeartbeat(device: SimulatedDevice): HeartbeatPayload {
+export function createHeartbeat(zone: SimulatedZone): HeartbeatPayload {
   return {
-    zoneId: device.zoneId,
-    deviceId: device.deviceId,
+    zoneId: zone.zoneId,
     status: 'online',
-    firmwareVersion: device.firmwareVersion,
+    firmwareVersion: zone.firmwareVersion,
     seenAt: new Date().toISOString(),
   }
 }

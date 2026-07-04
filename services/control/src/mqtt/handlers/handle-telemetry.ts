@@ -35,23 +35,11 @@ export async function handleTelemetryMessage(message: Buffer) {
     return
   }
 
-  const device = await db.device.findUnique({
-    where: {
-      id: payload.deviceId,
-    },
-  })
-
-  if (!device) {
-    console.warn(`Ignoring telemetry for unknown device: ${payload.deviceId}`)
-    return
-  }
-
   const recordedAt = new Date(payload.recordedAt)
 
   await db.telemetryReading.create({
     data: {
       zoneId: payload.zoneId,
-      deviceId: payload.deviceId,
       recordedAt,
       temperatureC: payload.temperatureC,
       humidityPct: payload.humidityPct,
@@ -59,7 +47,7 @@ export async function handleTelemetryMessage(message: Buffer) {
       estimatedPpfd: payload.estimatedPpfd ?? null,
       vpdKpa: payload.vpdKpa ?? null,
       condensationMarginC: payload.condensationMarginC ?? null,
-      rawPayload: payload,
+      rawPayload: JSON.parse(JSON.stringify(payload)),
     },
   })
 

@@ -62,7 +62,8 @@ export function SystemHealthCard({
 
           <HealthBadge status={deviceStatus}>
             <SproutIcon className="size-3.5" />
-            Devices {health.devices.recentlySeen}/{health.devices.total}
+            Zones online {health.controllers.recentlySeen}/
+            {health.controllers.total}
           </HealthBadge>
 
           <HealthBadge status={attentionStatus}>
@@ -73,7 +74,7 @@ export function SystemHealthCard({
         <p className="text-muted-foreground text-xs">
           Last heartbeat:{' '}
           <span className="text-foreground">
-            {formatDate(health.devices.lastHeartbeatAt)}
+            {formatDate(health.controllers.lastHeartbeatAt)}
           </span>
         </p>
       </CardContent>
@@ -152,15 +153,15 @@ function getBadgeVariant(status: BadgeStatus) {
 }
 
 function getDeviceStatus(health: SystemHealthResponse): BadgeStatus {
-  if (health.devices.total === 0) {
+  if (health.controllers.total === 0) {
     return 'degraded'
   }
 
-  if (health.devices.recentlySeen === 0) {
+  if (health.controllers.recentlySeen === 0) {
     return 'down'
   }
 
-  if (health.devices.recentlySeen < health.devices.total) {
+  if (health.controllers.recentlySeen < health.controllers.total) {
     return 'degraded'
   }
 

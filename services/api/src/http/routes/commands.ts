@@ -67,14 +67,6 @@ export async function registerCommandRoutes(app: FastifyInstance) {
       where: {
         id: params.zoneId,
       },
-      include: {
-        devices: {
-          take: 1,
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
     })
 
     if (!zone) {
@@ -84,19 +76,9 @@ export async function registerCommandRoutes(app: FastifyInstance) {
       return
     }
 
-    const device = zone.devices[0]
-
-    if (!device) {
-      reply.status(404).send({
-        error: 'No device found for zone',
-      })
-      return
-    }
-
     const command = await db.command.create({
       data: {
         zoneId: zone.id,
-        deviceId: device.id,
         source: CommandSource.MANUAL,
         type: CommandType.SET_OUTPUT,
         status: CommandStatus.PENDING,
@@ -107,7 +89,6 @@ export async function registerCommandRoutes(app: FastifyInstance) {
     const mqttCommand: CommandPayload = {
       commandId: command.id,
       zoneId: zone.id,
-      deviceId: device.id,
       type: 'set-output',
       payload: body,
       createdAt: command.createdAt.toISOString(),
