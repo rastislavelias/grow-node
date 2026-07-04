@@ -95,7 +95,7 @@ function HealthBadge({
       className={`gap-2 ${getBadgeClassName(status)}`}
     >
       {children}
-      <StatusIcon status={status} />
+      {status !== 'ok' ? <StatusIcon status={status} /> : null}
     </Badge>
   )
 }
@@ -112,7 +112,7 @@ function StatusIcon({ status }: { status: BadgeStatus }) {
   return <CircleCheckIcon className="size-3.5" />
 }
 
-// Utils
+// Helpers
 
 function getStatusLabel(status: BadgeStatus): string {
   if (status === 'degraded') {

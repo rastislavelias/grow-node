@@ -42,7 +42,7 @@ export default async function Home() {
             totalZones={zones.length}
           />
 
-          <section className="grid gap-4 lg:grid-cols-2">
+          <section className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,30rem),30rem))] gap-4">
             {zones.map((zone) => (
               <ZoneOverviewCard
                 key={zone.id}
