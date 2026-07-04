@@ -1,5 +1,6 @@
 import {
   manualCommandRequestSchema,
+  zoneCommandsResponseSchema,
   type CommandPayload,
 } from '@grow-node/contracts'
 import { CommandSource, CommandStatus, CommandType, db } from '@grow-node/db'
@@ -41,9 +42,22 @@ export async function registerCommandRoutes(app: FastifyInstance) {
       take: query.limit,
     })
 
-    return {
-      commands,
+    const response = {
+      commands: commands.map((command) => ({
+        id: command.id,
+        zoneId: command.zoneId,
+        source: command.source.toLowerCase() as 'manual' | 'automatic',
+        type: 'set-output' as const,
+        status: command.status.toLowerCase() as
+          'pending' | 'published' | 'acknowledged' | 'failed',
+        payload: manualCommandRequestSchema.parse(command.payload),
+        createdAt: command.createdAt.toISOString(),
+        publishedAt: command.publishedAt?.toISOString() ?? null,
+        acknowledgedAt: command.acknowledgedAt?.toISOString() ?? null,
+      })),
     }
+
+    return zoneCommandsResponseSchema.parse(response)
   })
 
   app.post('/zones/:zoneId/commands', async (request, reply) => {

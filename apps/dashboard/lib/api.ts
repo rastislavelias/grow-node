@@ -1,8 +1,14 @@
 import {
   systemHealthResponseSchema,
-  type SystemHealthResponse,
   zonesResponseSchema,
+  zoneCommandsResponseSchema,
+  zoneResponseSchema,
+  zoneTelemetryResponseSchema,
+  type SystemHealthResponse,
   type ZonesResponse,
+  type ZoneCommandsResponse,
+  type ZoneResponse,
+  type ZoneTelemetryResponse,
 } from '@grow-node/contracts'
 
 const apiBaseUrl =
@@ -36,4 +42,50 @@ export async function getSystemHealth(): Promise<SystemHealthResponse> {
   const data: unknown = await response.json()
 
   return systemHealthResponseSchema.parse(data)
+}
+
+export async function getZone(zoneId: string): Promise<ZoneResponse> {
+  const response = await fetch(`${apiBaseUrl}/zones/${zoneId}`, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch zone')
+  }
+
+  const data: unknown = await response.json()
+
+  return zoneResponseSchema.parse(data)
+}
+
+export async function getZoneTelemetry(
+  zoneId: string,
+): Promise<ZoneTelemetryResponse> {
+  const response = await fetch(`${apiBaseUrl}/zones/${zoneId}/telemetry`, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch zone telemetry')
+  }
+
+  const data: unknown = await response.json()
+
+  return zoneTelemetryResponseSchema.parse(data)
+}
+
+export async function getZoneCommands(
+  zoneId: string,
+): Promise<ZoneCommandsResponse> {
+  const response = await fetch(`${apiBaseUrl}/zones/${zoneId}/commands`, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch zone commands')
+  }
+
+  const data: unknown = await response.json()
+
+  return zoneCommandsResponseSchema.parse(data)
 }

@@ -2,6 +2,8 @@ import { db } from '@grow-node/db'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 
+import { zoneTelemetryResponseSchema } from '@grow-node/contracts'
+
 import { validateOrReply } from '../utils/validate.js'
 
 const zoneParamsSchema = z.object({
@@ -36,8 +38,21 @@ export async function registerTelemetryRoutes(app: FastifyInstance) {
       take: query.limit,
     })
 
-    return {
-      readings,
+    const response = {
+      readings: readings.map((reading) => ({
+        id: reading.id,
+        zoneId: reading.zoneId,
+        temperatureC: reading.temperatureC,
+        humidityPct: reading.humidityPct,
+        lightLux: reading.lightLux,
+        estimatedPpfd: reading.estimatedPpfd,
+        vpdKpa: reading.vpdKpa,
+        condensationMarginC: reading.condensationMarginC,
+        recordedAt: reading.recordedAt.toISOString(),
+        createdAt: reading.createdAt.toISOString(),
+      })),
     }
+
+    return zoneTelemetryResponseSchema.parse(response)
   })
 }

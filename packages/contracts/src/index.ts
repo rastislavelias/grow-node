@@ -44,12 +44,22 @@ export {
 } from './api/health.js'
 
 export {
-  zonesResponseSchema,
+  commandHistoryItemSchema,
+  telemetryReadingSchema,
+  zoneCommandsResponseSchema,
   zoneOverviewSchema,
+  zoneResponseSchema,
   zoneStateReasonSchema,
+  zoneTelemetryResponseSchema,
+  zonesResponseSchema,
+  type CommandHistoryItem,
+  type TelemetryReading,
+  type ZoneCommandsResponse,
   type ZoneOverview,
-  type ZonesResponse,
+  type ZoneResponse,
   type ZoneStateReason,
+  type ZoneTelemetryResponse,
+  type ZonesResponse,
 } from './api/zones.js'
 
 export {

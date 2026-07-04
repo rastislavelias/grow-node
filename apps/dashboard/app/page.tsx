@@ -32,7 +32,7 @@ export default async function Home() {
         </Breadcrumb>
       </SiteHeader>
       <ContainerMain>
-        <div className="space-y-8">
+        <div className="space-y-6">
           <header>
             <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
           </header>
