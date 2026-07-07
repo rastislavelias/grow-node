@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/card'
 import { ContainerMain } from '@/components/container-main'
 import { ItemGroup } from '@/components/ui/item'
+import { MetricGaugeCard } from '@/components/metric-gauge'
 import { SiteHeader } from '@/components/site-header'
 import { StatusItem } from '@/components/status-item'
 
@@ -162,31 +163,11 @@ export default async function Page({
 
           <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4">
             {/* Temporary debug card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Metric evaluation</CardTitle>
-                <CardDescription>
-                  Active phase: {metricEvaluation.activePhase}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
-                {metricEvaluation.metrics.map((metric) => (
-                  <div key={metric.key} className="rounded-lg border p-4">
-                    <p className="text-muted-foreground text-sm">
-                      {metric.label}
-                    </p>
-                    <p className="text-xl font-semibold">
-                      {metric.value === null
-                        ? 'No data'
-                        : `${metric.value.toFixed(metric.precision)} ${metric.unit}`}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      State: {metric.state}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
+              {metricEvaluation.metrics.map((metric) => (
+                <MetricGaugeCard key={metric.key} metric={metric} />
+              ))}
+            </section>
 
             <Card>
               <CardHeader>
