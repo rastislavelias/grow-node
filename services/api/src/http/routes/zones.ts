@@ -5,6 +5,7 @@ import { db } from '@grow-node/db'
 import { zonesResponseSchema, zoneResponseSchema } from '@grow-node/contracts'
 
 import { validateOrReply } from '../utils/validate.js'
+import { createZoneMetricEvaluationView } from '../mappers/zone-metric-evaluation.js'
 
 const zoneParamsSchema = z.object({
   zoneId: z.string().min(1),
@@ -83,6 +84,7 @@ export async function registerZoneRoutes(app: FastifyInstance) {
         id: params.zoneId,
       },
       include: {
+        plantProfile: true,
         state: true,
         telemetryReadings: {
           orderBy: {
@@ -99,6 +101,11 @@ export async function registerZoneRoutes(app: FastifyInstance) {
       })
       return
     }
+
+    const latestTelemetry = zone.telemetryReadings[0] ?? null
+
+    const activePhase =
+      zone.state?.activePhase === 'LIGHT_ON' ? 'lightOn' : 'lightOff'
 
     const response = {
       zone: {
@@ -140,6 +147,12 @@ export async function registerZoneRoutes(app: FastifyInstance) {
             }
           : null,
       },
+      metricEvaluation: createZoneMetricEvaluationView({
+        activePhase,
+        phaseConfigValue: zone.plantProfile.phaseConfig,
+        latestTelemetry,
+        reasonsValue: zone.state?.reasons ?? [],
+      }),
     }
 
     return zoneResponseSchema.parse(response)

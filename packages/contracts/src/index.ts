@@ -52,6 +52,13 @@ export {
   zoneStateReasonSchema,
   zoneTelemetryResponseSchema,
   zonesResponseSchema,
+  metricConfigViewSchema,
+  metricDirectionSchema,
+  metricKeySchema,
+  metricStateSchema,
+  rangeMetricConfigViewSchema,
+  riskMetricConfigViewSchema,
+  zoneMetricEvaluationViewSchema,
   type CommandHistoryItem,
   type TelemetryReading,
   type ZoneCommandsResponse,
@@ -60,6 +67,12 @@ export {
   type ZoneStateReason,
   type ZoneTelemetryResponse,
   type ZonesResponse,
+  type MetricConfigView,
+  type MetricDirection,
+  type MetricKey,
+  type MetricState,
+  type ZoneMetricEvaluationView,
+  type ZoneMetricView,
 } from './api/zones.js'
 
 export {

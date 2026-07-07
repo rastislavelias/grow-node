@@ -65,7 +65,7 @@ export default async function Page({
     notFound()
   }
 
-  const { zone } = zoneResult
+  const { zone, metricEvaluation } = zoneResult
   const latest = zone.latestTelemetry
 
   const zoneStatus = getZoneStatus(zone)
@@ -161,6 +161,33 @@ export default async function Page({
           </section>
 
           <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4">
+            {/* Temporary debug card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Metric evaluation</CardTitle>
+                <CardDescription>
+                  Active phase: {metricEvaluation.activePhase}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-4">
+                {metricEvaluation.metrics.map((metric) => (
+                  <div key={metric.key} className="rounded-lg border p-4">
+                    <p className="text-muted-foreground text-sm">
+                      {metric.label}
+                    </p>
+                    <p className="text-xl font-semibold">
+                      {metric.value === null
+                        ? 'No data'
+                        : `${metric.value.toFixed(metric.precision)} ${metric.unit}`}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      State: {metric.state}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Phase</CardTitle>

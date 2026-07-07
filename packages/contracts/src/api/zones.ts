@@ -12,6 +12,72 @@ export const zoneStateReasonSchema = z
   })
   .strict()
 
+export const metricKeySchema = z.enum([
+  'temperature',
+  'humidity',
+  'illuminance',
+  'estimatedPpfd',
+  'vpd',
+  'condensationMargin',
+])
+
+export const metricStateSchema = z.enum([
+  'optimal',
+  'settling',
+  'warning',
+  'danger',
+  'unknown',
+])
+
+export const metricDirectionSchema = z.enum(['low', 'high', 'risk']).nullable()
+
+export const numericRangeSchema = z.tuple([z.number(), z.number()])
+
+export const rangeMetricConfigViewSchema = z
+  .object({
+    kind: z.literal('range'),
+    optimal: numericRangeSchema,
+    warning: numericRangeSchema,
+    scale: numericRangeSchema.nullable(),
+    settleMinutes: z.number().int().nonnegative(),
+  })
+  .strict()
+
+export const riskMetricConfigViewSchema = z
+  .object({
+    kind: z.literal('risk'),
+    lowRiskMin: z.number(),
+    mediumRiskMin: z.number(),
+    scale: numericRangeSchema,
+    settleMinutes: z.number().int().nonnegative(),
+  })
+  .strict()
+
+export const metricConfigViewSchema = z.discriminatedUnion('kind', [
+  rangeMetricConfigViewSchema,
+  riskMetricConfigViewSchema,
+])
+
+export const zoneMetricViewSchema = z
+  .object({
+    key: metricKeySchema,
+    label: z.string(),
+    value: z.number().nullable(),
+    unit: z.string(),
+    precision: z.number().int().nonnegative(),
+    state: metricStateSchema,
+    direction: metricDirectionSchema,
+    range: metricConfigViewSchema,
+  })
+  .strict()
+
+export const zoneMetricEvaluationViewSchema = z
+  .object({
+    activePhase: zonePhaseSchema,
+    metrics: z.array(zoneMetricViewSchema),
+  })
+  .strict()
+
 export const zoneOverviewSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -51,6 +117,7 @@ export const zonesResponseSchema = z.object({
 
 export const zoneResponseSchema = z.object({
   zone: zoneOverviewSchema,
+  metricEvaluation: zoneMetricEvaluationViewSchema,
 })
 
 export const telemetryReadingSchema = z.object({
@@ -94,3 +161,11 @@ export type TelemetryReading = z.infer<typeof telemetryReadingSchema>
 export type ZoneTelemetryResponse = z.infer<typeof zoneTelemetryResponseSchema>
 export type CommandHistoryItem = z.infer<typeof commandHistoryItemSchema>
 export type ZoneCommandsResponse = z.infer<typeof zoneCommandsResponseSchema>
+export type MetricKey = z.infer<typeof metricKeySchema>
+export type MetricState = z.infer<typeof metricStateSchema>
+export type MetricDirection = z.infer<typeof metricDirectionSchema>
+export type MetricConfigView = z.infer<typeof metricConfigViewSchema>
+export type ZoneMetricView = z.infer<typeof zoneMetricViewSchema>
+export type ZoneMetricEvaluationView = z.infer<
+  typeof zoneMetricEvaluationViewSchema
+>
