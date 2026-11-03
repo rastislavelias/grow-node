@@ -30,7 +30,11 @@ Thumbs.db
 
 # PlatformIO / firmware
 firmware/grow-node-zone/.pio
-firmware/grow-node-zone/.vscode
+firmware/grow-node-zone/.vscode/.browse.c_cpp.db*
+firmware/grow-node-zone/.vscode/c_cpp_properties.json
+firmware/grow-node-zone/.vscode/launch.json
+firmware/grow-node-zone/.vscode/ipch
+firmware/grow-node-zone/src/config.h
 
 # local temp
 tmp
