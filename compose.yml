@@ -11,6 +11,27 @@ services:
       - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U grow_node -d grow_node']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  db-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: grow-node-db-setup
+    restart: 'no'
+    command: >-
+      sh -c "pnpm --filter @grow-node/db exec prisma migrate deploy &&
+      pnpm --filter @grow-node/db db:seed"
+    environment:
+      CI: 'true'
+      DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   mosquitto:
     image: eclipse-mosquitto:2
@@ -30,6 +51,7 @@ services:
     restart: unless-stopped
     command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/api dev"
     environment:
+      CI: 'true'
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
       CONTROL_HEALTH_URL: http://control:4100/health
@@ -39,12 +61,11 @@ services:
       DASHBOARD_ORIGIN: http://localhost:3000
     ports:
       - '4000:4000'
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
-      - postgres
-      - mosquitto
+      db-setup:
+        condition: service_completed_successfully
+      mosquitto:
+        condition: service_started
 
   control:
     build:
@@ -54,16 +75,16 @@ services:
     restart: unless-stopped
     command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/control dev"
     environment:
+      CI: 'true'
       DATABASE_URL: postgresql://grow_node:grow_node@postgres:5432/grow_node
       MQTT_URL: mqtt://mosquitto:1883
       CONTROL_HOST: 0.0.0.0
       CONTROL_PORT: 4100
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
-      - postgres
-      - mosquitto
+      db-setup:
+        condition: service_completed_successfully
+      mosquitto:
+        condition: service_started
 
   simulator:
     build:
@@ -73,11 +94,9 @@ services:
     restart: unless-stopped
     command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/simulator dev"
     environment:
+      CI: 'true'
       MQTT_URL: mqtt://mosquitto:1883
       SIMULATOR_INTERVAL_MS: 5000
-    volumes:
-      - .:/app
-      - /app/node_modules
     depends_on:
       - mosquitto
 
@@ -89,15 +108,11 @@ services:
     restart: unless-stopped
     command: sh -c "pnpm --filter @grow-node/contracts build && pnpm --filter @grow-node/dashboard dev"
     environment:
+      CI: 'true'
       API_INTERNAL_URL: http://api:4000
       NEXT_PUBLIC_API_URL: http://localhost:4000
     ports:
       - '3000:3000'
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/apps/dashboard/node_modules
-      - /app/apps/dashboard/.next
     depends_on:
       - api
 
