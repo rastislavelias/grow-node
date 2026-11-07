@@ -1,5 +1,11 @@
 import Link from 'next/link'
-import { ArrowRightIcon, Clock3Icon, LeafIcon, MapPinIcon } from 'lucide-react'
+import {
+  ArrowRightIcon,
+  Clock3Icon,
+  LeafIcon,
+  MapPinIcon,
+  PlusIcon,
+} from 'lucide-react'
 
 import { getPlantProfiles } from '@/lib/api'
 
@@ -10,6 +16,7 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -36,14 +43,22 @@ export default async function PlantProfilesPage() {
       </SiteHeader>
       <ContainerMain>
         <div className="space-y-6">
-          <header className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Plant profiles
-            </h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Reusable light schedules and environmental thresholds for your
-              growing zones.
-            </p>
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Plant profiles
+              </h1>
+              <p className="text-muted-foreground max-w-2xl">
+                Reusable light schedules and environmental thresholds for your
+                growing zones.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/plant-profiles/new">
+                <PlusIcon />
+                New profile
+              </Link>
+            </Button>
           </header>
 
           {plantProfiles.length === 0 ? (

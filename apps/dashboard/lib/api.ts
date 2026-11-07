@@ -6,6 +6,7 @@ import {
   zoneCommandsResponseSchema,
   zoneResponseSchema,
   zoneTelemetryResponseSchema,
+  type PlantProfileInput,
   type PlantProfileResponse,
   type PlantProfilesResponse,
   type SystemHealthResponse,
@@ -19,6 +20,16 @@ const apiBaseUrl =
   process.env.API_INTERNAL_URL ??
   process.env.NEXT_PUBLIC_API_URL ??
   'http://localhost:4000'
+
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message)
+    this.name = 'ApiRequestError'
+  }
+}
 
 export async function getZones(): Promise<ZonesResponse> {
   const response = await fetch(`${apiBaseUrl}/zones`, {
@@ -60,6 +71,35 @@ export async function getPlantProfile(
 
   if (!response.ok) {
     throw new Error('Failed to fetch plant profile')
+  }
+
+  const data: unknown = await response.json()
+
+  return plantProfileResponseSchema.parse(data)
+}
+
+export async function createPlantProfile(
+  input: PlantProfileInput,
+): Promise<PlantProfileResponse> {
+  const response = await fetch(`${apiBaseUrl}/plant-profiles`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  })
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    const message =
+      data &&
+      typeof data === 'object' &&
+      'error' in data &&
+      typeof data.error === 'string'
+        ? data.error
+        : 'Failed to create plant profile'
+
+    throw new ApiRequestError(message, response.status)
   }
 
   const data: unknown = await response.json()
