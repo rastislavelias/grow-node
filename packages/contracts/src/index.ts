@@ -44,6 +44,26 @@ export {
 } from './api/health.js'
 
 export {
+  assignPlantProfileRequestSchema,
+  createPlantProfileRequestSchema,
+  plantProfileInUseResponseSchema,
+  plantProfileInputSchema,
+  plantProfileResponseSchema,
+  plantProfileSchema,
+  plantProfilesResponseSchema,
+  plantProfileZoneReferenceSchema,
+  updatePlantProfileRequestSchema,
+  zonePlantProfileAssignmentResponseSchema,
+  type AssignPlantProfileRequest,
+  type PlantProfile,
+  type PlantProfileInUseResponse,
+  type PlantProfileInput,
+  type PlantProfileResponse,
+  type PlantProfilesResponse,
+  type ZonePlantProfileAssignmentResponse,
+} from './api/plant-profiles.js'
+
+export {
   commandHistoryItemSchema,
   telemetryReadingSchema,
   zoneCommandsResponseSchema,

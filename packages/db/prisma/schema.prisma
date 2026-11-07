@@ -65,7 +65,7 @@ model Zone {
   name String
 
   plantProfileId String
-  plantProfile   PlantProfile @relation(fields: [plantProfileId], references: [id])
+  plantProfile   PlantProfile @relation(fields: [plantProfileId], references: [id], onDelete: Restrict)
 
   controllerType            ControllerType
   controllerFirmwareVersion String?
