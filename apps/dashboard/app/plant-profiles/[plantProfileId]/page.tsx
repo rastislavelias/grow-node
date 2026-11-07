@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ContainerMain } from '@/components/container-main'
+import { DeletePlantProfileButton } from '@/components/delete-plant-profile-button'
 import { PlantProfilePhaseCard } from '@/components/plant-profile-phase-card'
 import { SiteHeader } from '@/components/site-header'
 
@@ -63,12 +64,18 @@ export default async function PlantProfilePage({
                 Schedule and environmental thresholds used by assigned zones.
               </p>
             </div>
-            <Button asChild variant="outline">
-              <Link href={`/plant-profiles/${plantProfile.id}/edit`}>
-                <PencilIcon />
-                Edit profile
-              </Link>
-            </Button>
+            <div className="flex flex-wrap items-start justify-end gap-2">
+              <Button asChild variant="outline">
+                <Link href={`/plant-profiles/${plantProfile.id}/edit`}>
+                  <PencilIcon />
+                  Edit profile
+                </Link>
+              </Button>
+              <DeletePlantProfileButton
+                plantProfileId={plantProfile.id}
+                plantProfileName={plantProfile.name}
+              />
+            </div>
           </header>
 
           <Card>

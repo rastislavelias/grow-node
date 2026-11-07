@@ -1,5 +1,6 @@
 import {
   plantProfileResponseSchema,
+  plantProfileInUseResponseSchema,
   plantProfilesResponseSchema,
   systemHealthResponseSchema,
   zonesResponseSchema,
@@ -7,6 +8,7 @@ import {
   zoneResponseSchema,
   zoneTelemetryResponseSchema,
   type PlantProfileInput,
+  type PlantProfileInUseResponse,
   type PlantProfileResponse,
   type PlantProfilesResponse,
   type SystemHealthResponse,
@@ -25,6 +27,7 @@ export class ApiRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly data?: unknown,
   ) {
     super(message)
     this.name = 'ApiRequestError'
@@ -99,7 +102,7 @@ export async function createPlantProfile(
         ? data.error
         : 'Failed to create plant profile'
 
-    throw new ApiRequestError(message, response.status)
+    throw new ApiRequestError(message, response.status, data)
   }
 
   const data: unknown = await response.json()
@@ -132,12 +135,45 @@ export async function updatePlantProfile(
         ? data.error
         : 'Failed to update plant profile'
 
-    throw new ApiRequestError(message, response.status)
+    throw new ApiRequestError(message, response.status, data)
   }
 
   const data: unknown = await response.json()
 
   return plantProfileResponseSchema.parse(data)
+}
+
+export async function deletePlantProfile(
+  plantProfileId: string,
+): Promise<void> {
+  const response = await fetch(
+    `${apiBaseUrl}/plant-profiles/${plantProfileId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+
+  if (response.ok) {
+    return
+  }
+
+  const data: unknown = await response.json().catch(() => null)
+  const message =
+    data &&
+    typeof data === 'object' &&
+    'error' in data &&
+    typeof data.error === 'string'
+      ? data.error
+      : 'Failed to delete plant profile'
+
+  throw new ApiRequestError(message, response.status, data)
+}
+
+export function getPlantProfileInUseError(
+  error: ApiRequestError,
+): PlantProfileInUseResponse | null {
+  const result = plantProfileInUseResponseSchema.safeParse(error.data)
+  return result.success ? result.data : null
 }
 
 export async function getSystemHealth(): Promise<SystemHealthResponse> {

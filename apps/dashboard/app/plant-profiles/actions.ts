@@ -10,6 +10,8 @@ import { redirect } from 'next/navigation'
 import {
   ApiRequestError,
   createPlantProfile,
+  deletePlantProfile,
+  getPlantProfileInUseError,
   updatePlantProfile,
 } from '@/lib/api'
 
@@ -26,6 +28,11 @@ const rangeMetricKeys: RangeMetricKey[] = [
 
 export type PlantProfileFormState = {
   error: string | null
+}
+
+export type DeletePlantProfileState = {
+  error: string | null
+  zones: Array<{ id: string; name: string }>
 }
 
 export async function createPlantProfileAction(
@@ -103,6 +110,46 @@ export async function updatePlantProfileAction(
   revalidatePath('/plant-profiles')
   revalidatePath(`/plant-profiles/${plantProfileId}`)
   redirect(`/plant-profiles/${plantProfileId}`)
+}
+
+export async function deletePlantProfileAction(
+  plantProfileId: string,
+  previousState: DeletePlantProfileState,
+): Promise<DeletePlantProfileState> {
+  void previousState
+
+  try {
+    await deletePlantProfile(plantProfileId)
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 409) {
+      const conflict = getPlantProfileInUseError(error)
+
+      if (conflict) {
+        return {
+          error: 'This profile cannot be deleted because it is in use.',
+          zones: conflict.zones,
+        }
+      }
+    }
+
+    if (error instanceof ApiRequestError && error.status === 404) {
+      return {
+        error: 'This plant profile no longer exists.',
+        zones: [],
+      }
+    }
+
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete plant profile.',
+      zones: [],
+    }
+  }
+
+  revalidatePath('/plant-profiles')
+  redirect('/plant-profiles')
 }
 
 function parsePlantProfileFormData(formData: FormData) {
