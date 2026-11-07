@@ -107,6 +107,39 @@ export async function createPlantProfile(
   return plantProfileResponseSchema.parse(data)
 }
 
+export async function updatePlantProfile(
+  plantProfileId: string,
+  input: PlantProfileInput,
+): Promise<PlantProfileResponse> {
+  const response = await fetch(
+    `${apiBaseUrl}/plant-profiles/${plantProfileId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    },
+  )
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    const message =
+      data &&
+      typeof data === 'object' &&
+      'error' in data &&
+      typeof data.error === 'string'
+        ? data.error
+        : 'Failed to update plant profile'
+
+    throw new ApiRequestError(message, response.status)
+  }
+
+  const data: unknown = await response.json()
+
+  return plantProfileResponseSchema.parse(data)
+}
+
 export async function getSystemHealth(): Promise<SystemHealthResponse> {
   const response = await fetch(`${apiBaseUrl}/health`, {
     cache: 'no-store',

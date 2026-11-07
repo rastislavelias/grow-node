@@ -11,6 +11,7 @@ import type {
 import {
   createPlantProfileAction,
   type PlantProfileFormState,
+  updatePlantProfileAction,
 } from '@/app/plant-profiles/actions'
 
 import { Button } from '@/components/ui/button'
@@ -42,13 +43,19 @@ const rangeMetrics: {
 
 export function PlantProfileForm({
   initialValue,
+  plantProfileId,
 }: {
   initialValue: PlantProfileInput
+  plantProfileId?: string
 }) {
-  const [state, formAction, pending] = useActionState(
-    createPlantProfileAction,
-    initialState,
-  )
+  const saveAction = plantProfileId
+    ? updatePlantProfileAction.bind(null, plantProfileId)
+    : createPlantProfileAction
+  const [state, formAction, pending] = useActionState(saveAction, initialState)
+  const isEditing = Boolean(plantProfileId)
+  const cancelHref = plantProfileId
+    ? `/plant-profiles/${plantProfileId}`
+    : '/plant-profiles'
 
   return (
     <form action={formAction} className="space-y-6">
@@ -123,10 +130,16 @@ export function PlantProfileForm({
 
       <div className="flex items-center justify-end gap-2">
         <Button asChild variant="outline">
-          <Link href="/plant-profiles">Cancel</Link>
+          <Link href={cancelHref}>Cancel</Link>
         </Button>
         <Button disabled={pending} type="submit">
-          {pending ? 'Creating…' : 'Create profile'}
+          {pending
+            ? isEditing
+              ? 'Saving…'
+              : 'Creating…'
+            : isEditing
+              ? 'Save changes'
+              : 'Create profile'}
         </Button>
       </div>
     </form>

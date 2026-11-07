@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Clock3Icon, MapPinIcon } from 'lucide-react'
+import { Clock3Icon, MapPinIcon, PencilIcon } from 'lucide-react'
 
 import { getPlantProfile } from '@/lib/api'
 
@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ContainerMain } from '@/components/container-main'
 import { PlantProfilePhaseCard } from '@/components/plant-profile-phase-card'
@@ -53,13 +54,21 @@ export default async function PlantProfilePage({
       </SiteHeader>
       <ContainerMain>
         <div className="space-y-6">
-          <header className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {plantProfile.name}
-            </h1>
-            <p className="text-muted-foreground">
-              Schedule and environmental thresholds used by assigned zones.
-            </p>
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-semibold tracking-tight">
+                {plantProfile.name}
+              </h1>
+              <p className="text-muted-foreground">
+                Schedule and environmental thresholds used by assigned zones.
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href={`/plant-profiles/${plantProfile.id}/edit`}>
+                <PencilIcon />
+                Edit profile
+              </Link>
+            </Button>
           </header>
 
           <Card>

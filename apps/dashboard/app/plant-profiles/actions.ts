@@ -7,7 +7,11 @@ import {
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { ApiRequestError, createPlantProfile } from '@/lib/api'
+import {
+  ApiRequestError,
+  createPlantProfile,
+  updatePlantProfile,
+} from '@/lib/api'
 
 type PhaseKey = 'lightOn' | 'lightOff'
 type RangeMetricKey = Exclude<keyof PhaseMetricsConfig, 'condensationMargin'>
@@ -28,15 +32,7 @@ export async function createPlantProfileAction(
   _previousState: PlantProfileFormState,
   formData: FormData,
 ): Promise<PlantProfileFormState> {
-  const input = plantProfileInputSchema.safeParse({
-    name: stringField(formData, 'name'),
-    scheduleStartMinutes: parseTime(stringField(formData, 'scheduleStart')),
-    scheduleDurationMinutes: numberField(formData, 'scheduleDurationMinutes'),
-    phaseConfig: {
-      lightOn: readPhase(formData, 'lightOn'),
-      lightOff: readPhase(formData, 'lightOff'),
-    },
-  })
+  const input = parsePlantProfileFormData(formData)
 
   if (!input.success) {
     const issue = input.error.issues[0]
@@ -67,6 +63,58 @@ export async function createPlantProfileAction(
 
   revalidatePath('/plant-profiles')
   redirect(`/plant-profiles/${plantProfileId}`)
+}
+
+export async function updatePlantProfileAction(
+  plantProfileId: string,
+  _previousState: PlantProfileFormState,
+  formData: FormData,
+): Promise<PlantProfileFormState> {
+  const input = parsePlantProfileFormData(formData)
+
+  if (!input.success) {
+    const issue = input.error.issues[0]
+    const field = issue.path.join('.')
+
+    return {
+      error: `${field ? `${field}: ` : ''}${issue.message}`,
+    }
+  }
+
+  try {
+    await updatePlantProfile(plantProfileId, input.data)
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 409) {
+      return { error: 'A plant profile with this name already exists.' }
+    }
+
+    if (error instanceof ApiRequestError && error.status === 404) {
+      return { error: 'This plant profile no longer exists.' }
+    }
+
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to update plant profile.',
+    }
+  }
+
+  revalidatePath('/plant-profiles')
+  revalidatePath(`/plant-profiles/${plantProfileId}`)
+  redirect(`/plant-profiles/${plantProfileId}`)
+}
+
+function parsePlantProfileFormData(formData: FormData) {
+  return plantProfileInputSchema.safeParse({
+    name: stringField(formData, 'name'),
+    scheduleStartMinutes: parseTime(stringField(formData, 'scheduleStart')),
+    scheduleDurationMinutes: numberField(formData, 'scheduleDurationMinutes'),
+    phaseConfig: {
+      lightOn: readPhase(formData, 'lightOn'),
+      lightOff: readPhase(formData, 'lightOff'),
+    },
+  })
 }
 
 function readPhase(formData: FormData, phase: PhaseKey) {
