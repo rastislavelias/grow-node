@@ -3,21 +3,42 @@ description: Grow Node project rules
 alwaysApply: true
 ---
 
-# Grow Node Rules
+# Grow Node MVP Rules
+
+## Source of truth
+
+- Read `docs/project-scope.md` before proposing or making changes.
+- Treat the MVP scope, release checklist, definition of done, and stop rule as authoritative.
+- Keep `README.md` accurate when setup steps or visible demo behaviour change.
+- Do not expand the project merely because an additional feature is technically possible.
 
 ## Project goal
 
-Grow Node is a local-first IoT grow monitoring system.
+Grow Node is a portfolio-quality, local-first IoT monitoring demo.
 
-The first public version must run locally with Docker Compose and simulated telemetry.
+The public MVP must run locally with `docker compose up --build`, require no physical hardware or cloud account, and show fresh simulated telemetry in the dashboard.
 
-Do not add AWS, authentication, cloud deployment, multi-tenant features, production IoT provisioning, advanced analytics, alerts, or extra services unless explicitly requested.
+The primary demo uses one simulated zone and three core readings: temperature, humidity, and light.
+
+Do not add AWS, authentication, cloud deployment, multi-tenant features, production IoT provisioning, advanced analytics, alerts, AI recommendations, or extra services unless the user explicitly changes the MVP scope.
+
+## Current release priorities
+
+Work only toward the unchecked items in the release checklist unless fixing a demonstrated defect.
+
+- Keep the default demo healthy and understandable with one active simulated zone.
+- Clarify the dashboard hierarchy without removing existing profile metrics or evaluation data.
+- Add complete plant-profile management with safe assignment and deletion behaviour.
+- Remove temporary debug UI and unused components.
+- Preserve the one-command Docker startup, automatic migrations, and idempotent seed data.
+- Keep optional ESP32 firmware separate from the required local demo.
+- Prefer clearer grouping and labels over removing domain data.
 
 ## Architecture
 
 Local data flow:
 
-simulator or ESP32 firmware -> Mosquitto MQTT -> control service -> PostgreSQL -> API service -> Next.js dashboard
+simulator or optional ESP32 firmware -> Mosquitto MQTT -> control service -> PostgreSQL -> API service -> Next.js dashboard
 
 Main folders:
 
@@ -51,6 +72,20 @@ Main folders:
 - Dashboard must not import Prisma.
 - Dashboard must not connect directly to MQTT.
 - Dashboard must not contain control-service decision logic.
+- The overview must emphasise temperature, humidity, light, controller freshness, and desired fan/light state.
+- The detail view may retain VPD, estimated PPFD, condensation margin, settling timers, and complete metric evaluation.
+- Plant-profile forms must preserve the complete `lightOn` and `lightOff` configuration.
+- The default simulator-only demo must not appear degraded because optional hardware is offline.
+- Prefer a calm, readable desktop layout over dense or decorative visualisation.
+
+## Plant-profile rules
+
+- One plant profile may be assigned to multiple zones.
+- Profile create and update requests must use shared Zod contracts.
+- Deleting a profile that is used by any zone must return `409 Conflict` before attempting deletion.
+- The conflict response must include the IDs and names of every affected zone so the dashboard can link to them.
+- Keep the database relation restrictive as a second layer of protection.
+- Do not add authentication or user roles for the local MVP unless explicitly requested.
 
 ## API service rules
 
@@ -79,6 +114,16 @@ Main folders:
 - Do not add Fastify to the simulator unless explicitly requested.
 - Simulator publishes telemetry and heartbeat messages over MQTT.
 - Simulator listens for commands and publishes command acknowledgements.
+- The default demo simulates one zone.
+- Physical hardware must never be required to review the public MVP.
+
+## Infrastructure rules
+
+- Docker Compose must remain the supported reviewer workflow.
+- A fresh database must receive migrations and idempotent seed data automatically.
+- `grow-node-db-setup` is a one-shot service and should exit successfully.
+- Do not reintroduce bind mounts that hide image-installed pnpm workspace dependencies in the default Compose file.
+- Preserve PostgreSQL data when running `docker compose down`; use volume deletion only when a deliberate reset is requested.
 
 ## Testing rules
 
@@ -90,12 +135,24 @@ Prioritize:
 - control service decision logic tests
 - API command validation tests
 
+Before public release, run:
+
+- `pnpm format:check`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm test`
+
 Do not add Playwright, Testcontainers, real MQTT integration tests, or complex E2E tests in the first version.
 
 ## Workflow
 
+- Finish each independently verifiable implementation step with a focused Git commit.
+- Before committing, run the relevant checks and review `git diff` and `git status` for unrelated or generated files.
+- Keep documentation, implementation, and refactoring in separate commits when they represent distinct steps.
+- Write commit subjects that describe the completed outcome; do not use `wip`, `fix`, `update`, `changes`, or similarly vague messages.
+- Do not commit secrets, local environment files, generated caches, or unrelated user changes.
 - Keep commits small and descriptive.
-- Avoid `wip`, `fix`, `update`, and unclear commit messages.
 - Before large changes, propose a short plan.
 - Update docs when architecture, setup commands, API routes, or MQTT contracts change.
 - Do not expand scope without updating `docs/project-scope.md`.
+- When every definition-of-done item is satisfied, stop adding features and prepare the repository for publication.
