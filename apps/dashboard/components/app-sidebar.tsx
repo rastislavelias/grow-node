@@ -1,5 +1,5 @@
 'use client'
-import { CircleGaugeIcon, SproutIcon } from 'lucide-react'
+import { CircleGaugeIcon, LeafIcon, SproutIcon } from 'lucide-react'
 
 import { NavMain } from '@/components/nav-main'
 import {
@@ -19,6 +19,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: 'Dashboard',
         url: '/',
         icon: CircleGaugeIcon,
+      },
+      {
+        title: 'Plant profiles',
+        url: '/plant-profiles',
+        icon: LeafIcon,
       },
     ],
   }
