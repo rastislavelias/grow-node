@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Clock3Icon, LeafIcon, MapPinIcon } from 'lucide-react'
+import { ArrowRightIcon, Clock3Icon, LeafIcon, MapPinIcon } from 'lucide-react'
 
 import { getPlantProfiles } from '@/lib/api'
 
@@ -113,6 +113,14 @@ export default async function PlantProfilesPage() {
                         )}
                       </div>
                     </div>
+
+                    <Link
+                      className="text-primary inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+                      href={`/plant-profiles/${profile.id}`}
+                    >
+                      View profile
+                      <ArrowRightIcon className="size-3.5" />
+                    </Link>
                   </CardContent>
                 </Card>
               ))}

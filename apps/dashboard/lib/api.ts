@@ -1,10 +1,12 @@
 import {
+  plantProfileResponseSchema,
   plantProfilesResponseSchema,
   systemHealthResponseSchema,
   zonesResponseSchema,
   zoneCommandsResponseSchema,
   zoneResponseSchema,
   zoneTelemetryResponseSchema,
+  type PlantProfileResponse,
   type PlantProfilesResponse,
   type SystemHealthResponse,
   type ZonesResponse,
@@ -44,6 +46,25 @@ export async function getPlantProfiles(): Promise<PlantProfilesResponse> {
   const data: unknown = await response.json()
 
   return plantProfilesResponseSchema.parse(data)
+}
+
+export async function getPlantProfile(
+  plantProfileId: string,
+): Promise<PlantProfileResponse> {
+  const response = await fetch(
+    `${apiBaseUrl}/plant-profiles/${plantProfileId}`,
+    {
+      cache: 'no-store',
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch plant profile')
+  }
+
+  const data: unknown = await response.json()
+
+  return plantProfileResponseSchema.parse(data)
 }
 
 export async function getSystemHealth(): Promise<SystemHealthResponse> {
