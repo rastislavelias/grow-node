@@ -218,7 +218,7 @@ docs                        Project scope and supporting documentation
 - [x] Root README matches the final behaviour and includes a current screenshot.
 - [x] A clean clone passes the one-command startup test.
 - [x] Formatting, linting, type checking, and tests pass.
-- [ ] Repository history and tracked files contain no secrets.
+- [x] Repository history and tracked files contain no secrets.
 - [ ] Repository is ready to be made public.
 
 ## Definition of done

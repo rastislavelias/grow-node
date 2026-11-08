@@ -9,7 +9,7 @@ static const char* MQTT_SERVER = "YOUR_MQTT_IP";
 static const int MQTT_PORT = 1883;
 
 // Zone/controller
-static const char* ZONE_ID = "zone-2";
+static const char* ZONE_ID = "esp32-zone-1";
 static const char* FIRMWARE_VERSION = "esp32-0.1.0";
 
 // I2C

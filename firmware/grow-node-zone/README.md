@@ -88,7 +88,7 @@ static const char* MQTT_SERVER = "YOUR_MQTT_IP";
 static const int MQTT_PORT = 1883;
 
 // Zone/controller
-static const char* ZONE_ID = "zone-2";
+static const char* ZONE_ID = "esp32-zone-1";
 static const char* FIRMWARE_VERSION = "esp32-0.1.0";
 
 // I2C
@@ -119,15 +119,16 @@ The backend identifies each controller by `ZONE_ID`.
 Example:
 
 ```cpp
-static const char* ZONE_ID = "zone-2";
+static const char* ZONE_ID = "esp32-zone-1";
 ```
 
-In the current seed data:
+The controller ID must already exist in the backend. Before uploading the firmware:
 
-- `zone-1` is used by the local simulator
-- `zone-2` is intended for the real ESP32 controller
+- open the local dashboard;
+- create a zone with controller type `ESP32`;
+- copy its exact ID into `ZONE_ID`.
 
-Use a zone ID that exists in the backend database.
+The default `zone-1` ID is reserved for the simulator. A physical controller can use a distinct ID such as `esp32-zone-1`.
 
 ---
 
@@ -142,13 +143,13 @@ grow-node/zones/{zoneId}/commands
 grow-node/zones/{zoneId}/command-ack
 ```
 
-Example for `zone-2`:
+Example for `esp32-zone-1`:
 
 ```txt
-grow-node/zones/zone-2/telemetry
-grow-node/zones/zone-2/heartbeat
-grow-node/zones/zone-2/commands
-grow-node/zones/zone-2/command-ack
+grow-node/zones/esp32-zone-1/telemetry
+grow-node/zones/esp32-zone-1/heartbeat
+grow-node/zones/esp32-zone-1/commands
+grow-node/zones/esp32-zone-1/command-ack
 ```
 
 ---
@@ -165,7 +166,7 @@ Example:
 
 ```json
 {
-  "zoneId": "zone-2",
+  "zoneId": "esp32-zone-1",
   "temperatureC": 23.9,
   "humidityPct": 91.4,
   "lightLux": 420,
@@ -199,7 +200,7 @@ Example:
 
 ```json
 {
-  "zoneId": "zone-2",
+  "zoneId": "esp32-zone-1",
   "status": "online",
   "firmwareVersion": "esp32-0.1.0",
   "seenAt": "2026-07-04T18:32:00Z"
@@ -223,7 +224,7 @@ Example command:
 ```json
 {
   "commandId": "cmd_123",
-  "zoneId": "zone-2",
+  "zoneId": "esp32-zone-1",
   "type": "set-output",
   "payload": {
     "fan": true,
@@ -261,7 +262,7 @@ Example success acknowledgement:
 ```json
 {
   "commandId": "cmd_123",
-  "zoneId": "zone-2",
+  "zoneId": "esp32-zone-1",
   "status": "acknowledged",
   "acknowledgedAt": "2026-07-04T18:32:01Z"
 }
@@ -272,7 +273,7 @@ Example failed acknowledgement:
 ```json
 {
   "commandId": "cmd_123",
-  "zoneId": "zone-2",
+  "zoneId": "esp32-zone-1",
   "status": "failed",
   "acknowledgedAt": "2026-07-04T18:32:01Z",
   "message": "Invalid set-output payload"
@@ -372,8 +373,8 @@ docker compose logs -f control
 Expected logs after the ESP32 connects:
 
 ```txt
-Stored heartbeat for zone-2
-Stored telemetry for zone-2
+Stored heartbeat for esp32-zone-1
+Stored telemetry for esp32-zone-1
 ```
 
 The dashboard should then show:
