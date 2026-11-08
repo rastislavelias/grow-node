@@ -1,15 +1,18 @@
 import {
   assignPlantProfileRequestSchema,
+  createZoneRequestSchema,
   plantProfileResponseSchema,
   plantProfileInUseResponseSchema,
   plantProfilesResponseSchema,
   systemHealthResponseSchema,
   zonesResponseSchema,
   zoneCommandsResponseSchema,
+  zoneConfigurationResponseSchema,
   zoneResponseSchema,
   zonePlantProfileAssignmentResponseSchema,
   zoneTelemetryResponseSchema,
   type AssignPlantProfileRequest,
+  type CreateZoneRequest,
   type PlantProfileInput,
   type PlantProfileInUseResponse,
   type PlantProfileResponse,
@@ -17,6 +20,7 @@ import {
   type SystemHealthResponse,
   type ZonesResponse,
   type ZoneCommandsResponse,
+  type ZoneConfigurationResponse,
   type ZoneResponse,
   type ZonePlantProfileAssignmentResponse,
   type ZoneTelemetryResponse,
@@ -50,6 +54,36 @@ export async function getZones(): Promise<ZonesResponse> {
   const data: unknown = await response.json()
 
   return zonesResponseSchema.parse(data)
+}
+
+export async function createZone(
+  input: CreateZoneRequest,
+): Promise<ZoneConfigurationResponse> {
+  const body = createZoneRequestSchema.parse(input)
+  const response = await fetch(`${apiBaseUrl}/zones`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    const message =
+      data &&
+      typeof data === 'object' &&
+      'error' in data &&
+      typeof data.error === 'string'
+        ? data.error
+        : 'Failed to create zone'
+
+    throw new ApiRequestError(message, response.status, data)
+  }
+
+  const data: unknown = await response.json()
+
+  return zoneConfigurationResponseSchema.parse(data)
 }
 
 export async function getPlantProfiles(): Promise<PlantProfilesResponse> {

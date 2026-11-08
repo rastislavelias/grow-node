@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { PlusIcon } from 'lucide-react'
+
 import { getSystemHealth, getZones } from '@/lib/api'
 
 import { AutoRefresh } from '@/components/auto-refresh'
@@ -8,6 +11,7 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb'
 import { ContainerMain } from '@/components/container-main'
+import { Button } from '@/components/ui/button'
 import { SiteHeader } from '@/components/site-header'
 import { SystemHealthCard } from '@/components/system-health-card'
 import { ZoneOverviewCard } from '@/components/zone-overview-card'
@@ -33,8 +37,14 @@ export default async function Home() {
       </SiteHeader>
       <ContainerMain>
         <div className="space-y-6">
-          <header>
+          <header className="flex flex-wrap items-start justify-between gap-4">
             <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+            <Button asChild>
+              <Link href="/zones/new">
+                <PlusIcon />
+                New zone
+              </Link>
+            </Button>
           </header>
           <SystemHealthCard
             health={health}
