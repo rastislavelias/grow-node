@@ -4,7 +4,9 @@ Grow Node is a local-first IoT monitoring demo that connects simulated or physic
 
 The repository is designed as a portfolio project: a reviewer can run the complete system locally with Docker and see live telemetry without owning an ESP32 or configuring a cloud account.
 
-> **Status:** MVP finishing pass. The end-to-end demo works; the dashboard and default demo data are being simplified for the first public release.
+> **Status:** MVP release candidate. The end-to-end demo, quality checks, and clean-start workflow are complete; final public-repository checks are in progress.
+
+![Grow Node zone monitoring dashboard](docs/assets/grow-node-zone-detail.png)
 
 ## What it demonstrates
 
@@ -13,6 +15,7 @@ The repository is designed as a portfolio project: a reviewer can run the comple
 - backend ingestion, state evaluation, and PostgreSQL persistence;
 - a dashboard-facing HTTP API;
 - a server-rendered Next.js dashboard;
+- complete local management of zones and plant profiles;
 - a hardware-free simulator for reproducible local demos;
 - optional ESP32 firmware using the same MQTT contract;
 - Docker-based local orchestration and automatic database setup.
@@ -93,16 +96,20 @@ The PostgreSQL data volume is preserved. To deliberately reset all local databas
 
 ## Expected demo behaviour
 
-The public MVP is centred on one simulated grow zone. The simulator publishes a heartbeat and fresh temperature, humidity, and light readings at a regular interval.
+The public MVP is centred on one simulated grow zone. The simulator publishes a heartbeat and fresh temperature, humidity, and light readings every five seconds.
 
 The dashboard shows:
 
 - overall system health;
 - controller connectivity and last reading time;
-- temperature, humidity, and light;
+- core temperature, humidity, and light readings;
+- advanced PPFD, VPD, and condensation-margin readings;
 - evaluated zone state;
-- desired fan and light state;
-- recent telemetry.
+- desired fan, light, and heater state;
+- recent telemetry and command history;
+- automatic five-second refresh on monitoring views.
+
+The local dashboard also supports complete plant-profile management and zone registration, editing, assignment, and confirmed deletion. These controls are intentionally unauthenticated and local-only for the portfolio MVP; they are not presented as production device provisioning.
 
 The simulator allows the complete pipeline to be reviewed without physical hardware. The ESP32 implementation is included as an optional extension of the same contract.
 
@@ -149,7 +156,7 @@ pnpm test
 
 ## API overview
 
-The dashboard currently uses these HTTP endpoints:
+The API exposes these dashboard-facing HTTP endpoints:
 
 ```text
 GET  /health
@@ -159,7 +166,10 @@ POST /plant-profiles
 PUT  /plant-profiles/:plantProfileId
 DELETE /plant-profiles/:plantProfileId
 GET  /zones
+POST /zones
 GET  /zones/:zoneId
+PUT  /zones/:zoneId
+DELETE /zones/:zoneId
 GET  /zones/:zoneId/telemetry
 GET  /zones/:zoneId/commands
 POST /zones/:zoneId/commands

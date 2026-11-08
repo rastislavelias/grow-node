@@ -215,7 +215,7 @@ docs                        Project scope and supporting documentation
 - [x] Dashboard supports zone creation, editing, and confirmed deletion.
 - [x] Dashboard presents core and advanced metrics with a clear hierarchy.
 - [x] Temporary debug UI and unused components are removed.
-- [ ] Root README matches the final behaviour and includes a current screenshot.
+- [x] Root README matches the final behaviour and includes a current screenshot.
 - [x] A clean clone passes the one-command startup test.
 - [x] Formatting, linting, type checking, and tests pass.
 - [ ] Repository history and tracked files contain no secrets.
