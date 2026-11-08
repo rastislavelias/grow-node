@@ -3,6 +3,43 @@ import { z } from 'zod'
 import { zonePhaseSchema, zoneStatusSchema } from '../shared/status.js'
 import { setOutputPayloadSchema } from '../mqtt/commands.js'
 
+export const zoneControllerTypeSchema = z.enum(['esp32', 'simulator'])
+
+export const zoneIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    'Zone ID must use lowercase letters, numbers, and single hyphens',
+  )
+
+export const zoneConfigurationInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    controllerType: zoneControllerTypeSchema,
+    controllerFirmwareVersion: z.string().trim().min(1).max(120).nullable(),
+    plantProfileId: z.string().min(1),
+  })
+  .strict()
+
+export const createZoneRequestSchema = zoneConfigurationInputSchema
+  .extend({
+    id: zoneIdSchema,
+  })
+  .strict()
+
+export const updateZoneRequestSchema = zoneConfigurationInputSchema
+
+export const zoneConfigurationSchema = createZoneRequestSchema
+
+export const zoneConfigurationResponseSchema = z
+  .object({
+    zone: zoneConfigurationSchema,
+  })
+  .strict()
+
 export const zoneStateReasonSchema = z
   .object({
     metric: z.string(),
@@ -82,7 +119,7 @@ export const zoneOverviewSchema = z.object({
   id: z.string(),
   name: z.string(),
   controller: z.object({
-    type: z.enum(['esp32', 'simulator']),
+    type: zoneControllerTypeSchema,
     firmwareVersion: z.string().nullable(),
     lastSeenAt: z.string().nullable(),
   }),
@@ -159,6 +196,16 @@ export const zoneCommandsResponseSchema = z.object({
 })
 
 export type ZoneStateReason = z.infer<typeof zoneStateReasonSchema>
+export type ZoneControllerType = z.infer<typeof zoneControllerTypeSchema>
+export type ZoneConfigurationInput = z.infer<
+  typeof zoneConfigurationInputSchema
+>
+export type CreateZoneRequest = z.infer<typeof createZoneRequestSchema>
+export type UpdateZoneRequest = z.infer<typeof updateZoneRequestSchema>
+export type ZoneConfiguration = z.infer<typeof zoneConfigurationSchema>
+export type ZoneConfigurationResponse = z.infer<
+  typeof zoneConfigurationResponseSchema
+>
 export type ZoneOverview = z.infer<typeof zoneOverviewSchema>
 export type ZonesResponse = z.infer<typeof zonesResponseSchema>
 export type ZoneResponse = z.infer<typeof zoneResponseSchema>
