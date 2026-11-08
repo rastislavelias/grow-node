@@ -1,4 +1,5 @@
 import {
+  assignPlantProfileRequestSchema,
   plantProfileResponseSchema,
   plantProfileInUseResponseSchema,
   plantProfilesResponseSchema,
@@ -6,7 +7,9 @@ import {
   zonesResponseSchema,
   zoneCommandsResponseSchema,
   zoneResponseSchema,
+  zonePlantProfileAssignmentResponseSchema,
   zoneTelemetryResponseSchema,
+  type AssignPlantProfileRequest,
   type PlantProfileInput,
   type PlantProfileInUseResponse,
   type PlantProfileResponse,
@@ -15,6 +18,7 @@ import {
   type ZonesResponse,
   type ZoneCommandsResponse,
   type ZoneResponse,
+  type ZonePlantProfileAssignmentResponse,
   type ZoneTelemetryResponse,
 } from '@grow-node/contracts'
 
@@ -167,6 +171,37 @@ export async function deletePlantProfile(
       : 'Failed to delete plant profile'
 
   throw new ApiRequestError(message, response.status, data)
+}
+
+export async function assignPlantProfile(
+  zoneId: string,
+  input: AssignPlantProfileRequest,
+): Promise<ZonePlantProfileAssignmentResponse> {
+  const body = assignPlantProfileRequestSchema.parse(input)
+  const response = await fetch(`${apiBaseUrl}/zones/${zoneId}/plant-profile`, {
+    method: 'PUT',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const data: unknown = await response.json().catch(() => null)
+    const message =
+      data &&
+      typeof data === 'object' &&
+      'error' in data &&
+      typeof data.error === 'string'
+        ? data.error
+        : 'Failed to assign plant profile'
+
+    throw new ApiRequestError(message, response.status, data)
+  }
+
+  const data: unknown = await response.json()
+
+  return zonePlantProfileAssignmentResponseSchema.parse(data)
 }
 
 export function getPlantProfileInUseError(

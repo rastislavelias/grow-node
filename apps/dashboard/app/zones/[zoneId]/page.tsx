@@ -15,6 +15,7 @@ import {
   getZoneCommands,
   getZoneTelemetry,
   getSystemHealth,
+  getPlantProfiles,
 } from '@/lib/api'
 import {
   getControllerLabel,
@@ -44,6 +45,7 @@ import { ItemGroup } from '@/components/ui/item'
 import { MetricGaugeCard } from '@/components/metric-gauge'
 import { SiteHeader } from '@/components/site-header'
 import { StatusItem } from '@/components/status-item'
+import { ZonePlantProfileForm } from '@/components/zone-plant-profile-form'
 
 export default async function Page({
   params,
@@ -54,12 +56,13 @@ export default async function Page({
 }) {
   const { zoneId } = await params
 
-  const [zoneResult, telemetryResult, commandsResult, health] =
+  const [zoneResult, telemetryResult, commandsResult, health, profilesResult] =
     await Promise.all([
       getZone(zoneId).catch(() => null),
       getZoneTelemetry(zoneId),
       getZoneCommands(zoneId),
       getSystemHealth(),
+      getPlantProfiles(),
     ])
 
   if (!zoneResult) {
@@ -150,6 +153,12 @@ export default async function Page({
               />
             </ItemGroup>
           </section>
+
+          <ZonePlantProfileForm
+            currentPlantProfile={zone.plantProfile}
+            plantProfiles={profilesResult.plantProfiles}
+            zoneId={zone.id}
+          />
 
           <section>
             {zone.state?.reasons?.length && zone.state.reasons.length > 0 ? (

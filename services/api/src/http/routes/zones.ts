@@ -146,6 +146,10 @@ export async function registerZoneRoutes(app: FastifyInstance) {
               recordedAt: zone.telemetryReadings[0].recordedAt.toISOString(),
             }
           : null,
+        plantProfile: {
+          id: zone.plantProfile.id,
+          name: zone.plantProfile.name,
+        },
       },
       metricEvaluation: createZoneMetricEvaluationView({
         activePhase,

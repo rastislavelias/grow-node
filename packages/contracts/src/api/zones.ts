@@ -116,7 +116,12 @@ export const zonesResponseSchema = z.object({
 })
 
 export const zoneResponseSchema = z.object({
-  zone: zoneOverviewSchema,
+  zone: zoneOverviewSchema.extend({
+    plantProfile: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+  }),
   metricEvaluation: zoneMetricEvaluationViewSchema,
 })
 
