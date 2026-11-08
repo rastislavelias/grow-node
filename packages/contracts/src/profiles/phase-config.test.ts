@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { phaseConfigSchema } from './phase-config.js'
+import {
+  condensationMarginConfigSchema,
+  phaseConfigSchema,
+} from './phase-config.js'
 
 describe('phaseConfigSchema', () => {
   it('accepts light on and light off phase configuration', () => {
@@ -43,7 +46,7 @@ describe('phaseConfigSchema', () => {
         condensationMargin: {
           lowRiskMin: 1,
           mediumRiskMin: 0.3,
-          scale: [0, 0.5],
+          scale: [0, 3],
           settleMinutes: 90,
         },
         estimatedPpfd: {
@@ -118,7 +121,7 @@ describe('phaseConfigSchema', () => {
         condensationMargin: {
           lowRiskMin: 1,
           mediumRiskMin: 0.3,
-          scale: [0, 0.5],
+          scale: [0, 3],
           settleMinutes: 90,
         },
         estimatedPpfd: {
@@ -148,6 +151,30 @@ describe('phaseConfigSchema', () => {
           settleMinutes: 90,
         },
       },
+    })
+
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('condensationMarginConfigSchema', () => {
+  it('rejects a scale that cannot display every risk band', () => {
+    const result = condensationMarginConfigSchema.safeParse({
+      lowRiskMin: 1,
+      mediumRiskMin: 0.3,
+      scale: [0, 0.5],
+      settleMinutes: 90,
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects risk thresholds in the wrong order', () => {
+    const result = condensationMarginConfigSchema.safeParse({
+      lowRiskMin: 0.3,
+      mediumRiskMin: 1,
+      scale: [0, 3],
+      settleMinutes: 90,
     })
 
     expect(result.success).toBe(false)

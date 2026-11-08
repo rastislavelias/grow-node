@@ -23,6 +23,32 @@ export const condensationMarginConfigSchema = z
     settleMinutes: z.number().int().nonnegative(),
   })
   .strict()
+  .superRefine((config, context) => {
+    if (config.mediumRiskMin > config.lowRiskMin) {
+      context.addIssue({
+        code: 'custom',
+        message:
+          'Medium-risk minimum must be less than or equal to low-risk minimum',
+        path: ['mediumRiskMin'],
+      })
+    }
+
+    if (config.scale[0] >= config.mediumRiskMin) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Scale minimum must be below medium-risk minimum',
+        path: ['scale', 0],
+      })
+    }
+
+    if (config.scale[1] <= config.lowRiskMin) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Scale maximum must be above low-risk minimum',
+        path: ['scale', 1],
+      })
+    }
+  })
 
 export const phaseMetricsConfigSchema = z
   .object({

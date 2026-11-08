@@ -43,7 +43,7 @@ export const newPlantProfileDefaults: PlantProfileInput = {
       condensationMargin: {
         lowRiskMin: 1,
         mediumRiskMin: 0.3,
-        scale: [0, 0.5],
+        scale: [0, 3],
         settleMinutes: 90,
       },
       estimatedPpfd: {

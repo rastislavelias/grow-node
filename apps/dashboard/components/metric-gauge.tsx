@@ -66,7 +66,6 @@ function MetricGauge({ metric }: { metric: ZoneMetricView }) {
 
   const displaySegments = createDisplaySegments({
     segments,
-    activeSegmentIndex,
     currentTone,
     scale,
     radius: geometry.radius,
@@ -189,9 +188,21 @@ function formatMetricValue(metric: ZoneMetricView): string {
 
 function resolveScale(metric: ZoneMetricView): Scale {
   if (metric.range.kind === 'risk') {
+    const [configuredMin, configuredMax] = metric.range.scale
+    const riskSpan = Math.max(
+      metric.range.lowRiskMin - metric.range.mediumRiskMin,
+      0.1,
+    )
+
     return {
-      min: metric.range.scale[0],
-      max: metric.range.scale[1],
+      min:
+        configuredMin < metric.range.mediumRiskMin
+          ? configuredMin
+          : metric.range.mediumRiskMin - riskSpan,
+      max:
+        configuredMax > metric.range.lowRiskMin
+          ? configuredMax
+          : metric.range.lowRiskMin + riskSpan,
     }
   }
 
@@ -328,13 +339,11 @@ function getActiveSegmentIndex({
 
 function createDisplaySegments({
   segments,
-  activeSegmentIndex,
   currentTone,
   scale,
   radius,
 }: {
   segments: GaugeSegment[]
-  activeSegmentIndex: number | null
   currentTone: GaugeTone | null
   scale: Scale
   radius: number
