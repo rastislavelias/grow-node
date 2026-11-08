@@ -211,10 +211,10 @@ docs                        Project scope and supporting documentation
 - [x] Dashboard profile management supports complete profile creation and editing.
 - [x] A blocked-delete alert links to every affected zone.
 - [x] Default seed/demo presents one active simulated zone without a misleading degraded state.
-- [ ] Zone create, edit, and delete API endpoints are implemented and validated.
-- [ ] Dashboard supports zone creation, editing, and confirmed deletion.
-- [ ] Dashboard presents core and advanced metrics with a clear hierarchy.
-- [ ] Temporary debug UI and unused components are removed.
+- [x] Zone create, edit, and delete API endpoints are implemented and validated.
+- [x] Dashboard supports zone creation, editing, and confirmed deletion.
+- [x] Dashboard presents core and advanced metrics with a clear hierarchy.
+- [x] Temporary debug UI and unused components are removed.
 - [ ] Root README matches the final behaviour and includes a current screenshot.
 - [ ] A clean clone passes the one-command startup test.
 - [ ] Formatting, linting, type checking, and tests pass.
