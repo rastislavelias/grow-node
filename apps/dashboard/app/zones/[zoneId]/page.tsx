@@ -457,7 +457,7 @@ function formatDate(value: string | null): string {
 
   return new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'medium',
-    timeStyle: 'short',
+    timeStyle: 'medium',
   }).format(new Date(value))
 }
 
