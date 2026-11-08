@@ -219,7 +219,7 @@ docs                        Project scope and supporting documentation
 - [x] A clean clone passes the one-command startup test.
 - [x] Formatting, linting, type checking, and tests pass.
 - [x] Repository history and tracked files contain no secrets.
-- [ ] Repository is ready to be made public.
+- [x] Repository is ready to be made public.
 
 ## Definition of done
 

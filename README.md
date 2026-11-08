@@ -4,7 +4,7 @@ Grow Node is a local-first IoT monitoring demo that connects simulated or physic
 
 The repository is designed as a portfolio project: a reviewer can run the complete system locally with Docker and see live telemetry without owning an ESP32 or configuring a cloud account.
 
-> **Status:** MVP release candidate. The end-to-end demo, quality checks, and clean-start workflow are complete; final public-repository checks are in progress.
+> **Status:** MVP complete and ready for public release. The end-to-end demo, quality checks, clean-start workflow, and repository safety review are complete.
 
 ![Grow Node zone monitoring dashboard](docs/assets/grow-node-zone-detail.png)
 
