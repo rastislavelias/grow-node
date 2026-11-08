@@ -3,7 +3,11 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 
-import { createZoneAction, type ZoneFormState } from '@/app/zones/actions'
+import {
+  createZoneAction,
+  type ZoneFormState,
+  updateZoneAction,
+} from '@/app/zones/actions'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -25,15 +29,27 @@ import {
 const initialState: ZoneFormState = { error: null }
 
 export function ZoneForm({
+  initialValue,
   plantProfiles,
+  zoneId,
 }: {
+  initialValue?: {
+    id: string
+    name: string
+    controllerType: 'esp32' | 'simulator'
+    controllerFirmwareVersion: string | null
+    plantProfileId: string
+  }
   plantProfiles: Array<{ id: string; name: string }>
+  zoneId?: string
 }) {
-  const [state, formAction, pending] = useActionState(
-    createZoneAction,
-    initialState,
-  )
+  const saveAction = zoneId
+    ? updateZoneAction.bind(null, zoneId)
+    : createZoneAction
+  const [state, formAction, pending] = useActionState(saveAction, initialState)
   const canCreate = plantProfiles.length > 0
+  const isEditing = Boolean(zoneId)
+  const cancelHref = zoneId ? `/zones/${zoneId}` : '/'
 
   return (
     <form action={formAction} className="space-y-6">
@@ -52,6 +68,8 @@ export function ZoneForm({
             name="id"
           >
             <Input
+              defaultValue={initialValue?.id}
+              disabled={isEditing}
               id="id"
               maxLength={64}
               name="id"
@@ -62,6 +80,7 @@ export function ZoneForm({
           </FormField>
           <FormField label="Display name" name="name">
             <Input
+              defaultValue={initialValue?.name}
               id="name"
               maxLength={120}
               name="name"
@@ -70,7 +89,11 @@ export function ZoneForm({
             />
           </FormField>
           <FormField label="Controller type" name="controllerType">
-            <Select defaultValue="esp32" name="controllerType" required>
+            <Select
+              defaultValue={initialValue?.controllerType ?? 'esp32'}
+              name="controllerType"
+              required
+            >
               <SelectTrigger className="w-full" id="controllerType">
                 <SelectValue />
               </SelectTrigger>
@@ -86,6 +109,7 @@ export function ZoneForm({
             name="controllerFirmwareVersion"
           >
             <Input
+              defaultValue={initialValue?.controllerFirmwareVersion ?? ''}
               id="controllerFirmwareVersion"
               maxLength={120}
               name="controllerFirmwareVersion"
@@ -98,7 +122,9 @@ export function ZoneForm({
             name="plantProfileId"
           >
             <Select
-              defaultValue={plantProfiles[0]?.id}
+              defaultValue={
+                initialValue?.plantProfileId ?? plantProfiles[0]?.id
+              }
               disabled={!canCreate}
               name="plantProfileId"
               required
@@ -122,9 +148,9 @@ export function ZoneForm({
         <p className="font-medium">Controller identity</p>
         <p className="text-muted-foreground mt-1">
           The zone ID becomes the controller&apos;s MQTT identity and cannot be
-          changed later. The controller must publish messages using this exact
-          ID. Registering a zone does not provision hardware or start another
-          simulator instance.
+          changed after registration. The controller must publish messages using
+          this exact ID. Registering a zone does not provision hardware or start
+          another simulator instance.
         </p>
       </div>
 
@@ -149,10 +175,16 @@ export function ZoneForm({
 
       <div className="flex justify-end gap-2">
         <Button asChild variant="outline">
-          <Link href="/">Cancel</Link>
+          <Link href={cancelHref}>Cancel</Link>
         </Button>
         <Button disabled={pending || !canCreate} type="submit">
-          {pending ? 'Creating…' : 'Create zone'}
+          {pending
+            ? isEditing
+              ? 'Saving…'
+              : 'Creating…'
+            : isEditing
+              ? 'Save changes'
+              : 'Create zone'}
         </Button>
       </div>
     </form>

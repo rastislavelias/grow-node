@@ -5,6 +5,7 @@ import {
   ClockIcon,
   FanIcon,
   LightbulbIcon,
+  PencilIcon,
   ThermometerIcon,
   WifiIcon,
   WifiOffIcon,
@@ -40,6 +41,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { ContainerMain } from '@/components/container-main'
 import { ItemGroup } from '@/components/ui/item'
 import { MetricGaugeCard } from '@/components/metric-gauge'
@@ -112,13 +114,21 @@ export default async function Page({
       </SiteHeader>
       <ContainerMain>
         <div className="space-y-6">
-          <header>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              {zone.name}
-            </h1>
-            <p>
-              ID: <span className="text-muted-foreground">{zone.id}</span>
-            </p>
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                {zone.name}
+              </h1>
+              <p>
+                ID: <span className="text-muted-foreground">{zone.id}</span>
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href={`/zones/${zone.id}/edit`}>
+                <PencilIcon />
+                Edit zone
+              </Link>
+            </Button>
           </header>
 
           <section>
