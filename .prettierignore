@@ -11,6 +11,7 @@ coverage
 
 firmware/grow-node-zone/.pio
 firmware/grow-node-zone/.vscode
+firmware/grow-node-zone/.clang-format
 
 packages/db/src/generated
 apps/dashboard/next-env.d.ts

@@ -217,7 +217,7 @@ docs                        Project scope and supporting documentation
 - [x] Temporary debug UI and unused components are removed.
 - [ ] Root README matches the final behaviour and includes a current screenshot.
 - [ ] A clean clone passes the one-command startup test.
-- [ ] Formatting, linting, type checking, and tests pass.
+- [x] Formatting, linting, type checking, and tests pass.
 - [ ] Repository history and tracked files contain no secrets.
 - [ ] Repository is ready to be made public.
 
