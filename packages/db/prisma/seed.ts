@@ -153,14 +153,6 @@ async function main() {
     plantProfileId: plantProfile.id,
   })
 
-  await upsertZone({
-    zoneId: 'zone-2',
-    zoneName: 'Anubias Zone 2',
-    controllerType: ControllerType.ESP32,
-    controllerFirmwareVersion: 'esp32-0.1.0',
-    plantProfileId: plantProfile.id,
-  })
-
   console.log('Seed data created')
 }
 
