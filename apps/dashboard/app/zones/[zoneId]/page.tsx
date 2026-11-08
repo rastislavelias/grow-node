@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { CommandHistoryItem } from '@grow-node/contracts'
 import {
   ActivityIcon,
   ClockIcon,
@@ -41,6 +42,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ContainerMain } from '@/components/container-main'
 import { DeleteZoneButton } from '@/components/delete-zone-button'
 import { ItemGroup } from '@/components/ui/item'
@@ -300,76 +302,108 @@ export default async function Page({
           <Card>
             <CardHeader>
               <CardTitle>Recent telemetry</CardTitle>
-              <CardDescription>Latest sensor readings</CardDescription>
+              <CardDescription>
+                Latest readings received from this zone
+              </CardDescription>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-muted-foreground border-b text-left">
-                  <tr>
-                    <th className="py-2 pr-4 font-medium">Time</th>
-                    <th className="py-2 pr-4 font-medium">Temp</th>
-                    <th className="py-2 pr-4 font-medium">Humidity</th>
-                    <th className="py-2 pr-4 font-medium">Light</th>
-                    <th className="py-2 pr-4 font-medium">VPD</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {telemetryResult.readings.map((reading) => (
-                    <tr key={reading.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4">
-                        {formatDate(reading.recordedAt)}
-                      </td>
-                      <td className="py-2 pr-4">{reading.temperatureC}°C</td>
-                      <td className="py-2 pr-4">{reading.humidityPct}%</td>
-                      <td className="py-2 pr-4">{reading.lightLux} lx</td>
-                      <td className="py-2 pr-4">
-                        {reading.vpdKpa ?? 'No data'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent>
+              {telemetryResult.readings.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-2xl text-sm">
+                    <caption className="sr-only">
+                      Recent telemetry readings for {zone.name}
+                    </caption>
+                    <thead className="text-muted-foreground border-b text-left">
+                      <tr>
+                        <th className="py-2 pr-4 font-medium">Received</th>
+                        <th className="py-2 pr-4 font-medium">Temperature</th>
+                        <th className="py-2 pr-4 font-medium">Humidity</th>
+                        <th className="py-2 pr-4 font-medium">Illuminance</th>
+                        <th className="py-2 font-medium">VPD</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {telemetryResult.readings.map((reading) => (
+                        <tr key={reading.id} className="border-b last:border-0">
+                          <td className="py-3 pr-4 whitespace-nowrap">
+                            {formatDate(reading.recordedAt)}
+                          </td>
+                          <td className="py-3 pr-4 whitespace-nowrap">
+                            {formatReading(reading.temperatureC, '°C', 1)}
+                          </td>
+                          <td className="py-3 pr-4 whitespace-nowrap">
+                            {formatReading(reading.humidityPct, '%', 1)}
+                          </td>
+                          <td className="py-3 pr-4 whitespace-nowrap">
+                            {formatReading(reading.lightLux, 'lx', 0)}
+                          </td>
+                          <td className="py-3 whitespace-nowrap">
+                            {formatReading(reading.vpdKpa, 'kPa', 2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyTableState message="No telemetry has been received from this zone yet." />
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>Command history</CardTitle>
-              <CardDescription>Recent zone commands</CardDescription>
+              <CardDescription>
+                Recent output instructions sent to the controller
+              </CardDescription>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-muted-foreground border-b text-left">
-                  <tr>
-                    <th className="py-2 pr-4 font-medium">Time</th>
-                    <th className="py-2 pr-4 font-medium">Source</th>
-                    <th className="py-2 pr-4 font-medium">Status</th>
-                    <th className="py-2 pr-4 font-medium">Fan</th>
-                    <th className="py-2 pr-4 font-medium">Light</th>
-                    <th className="py-2 pr-4 font-medium">Heater</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commandsResult.commands.map((command) => (
-                    <tr key={command.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4">
-                        {formatDate(command.createdAt)}
-                      </td>
-                      <td className="py-2 pr-4">{command.source}</td>
-                      <td className="py-2 pr-4">{command.status}</td>
-                      <td className="py-2 pr-4">
-                        {command.payload.fan ? 'On' : 'Off'}
-                      </td>
-                      <td className="py-2 pr-4">
-                        {command.payload.light ? 'On' : 'Off'}
-                      </td>
-                      <td className="py-2 pr-4">
-                        {command.payload.heater ? 'On' : 'Off'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent>
+              {commandsResult.commands.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-2xl text-sm">
+                    <caption className="sr-only">
+                      Command history for {zone.name}
+                    </caption>
+                    <thead className="text-muted-foreground border-b text-left">
+                      <tr>
+                        <th className="py-2 pr-4 font-medium">Created</th>
+                        <th className="py-2 pr-4 font-medium">Source</th>
+                        <th className="py-2 pr-4 font-medium">Status</th>
+                        <th className="py-2 pr-4 font-medium">Fan</th>
+                        <th className="py-2 pr-4 font-medium">Light</th>
+                        <th className="py-2 font-medium">Heater</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {commandsResult.commands.map((command) => (
+                        <tr key={command.id} className="border-b last:border-0">
+                          <td className="py-3 pr-4 whitespace-nowrap">
+                            {formatDate(command.createdAt)}
+                          </td>
+                          <td className="py-3 pr-4 capitalize">
+                            {command.source}
+                          </td>
+                          <td className="py-3 pr-4">
+                            <CommandStatusBadge status={command.status} />
+                          </td>
+                          <td className="py-3 pr-4">
+                            <OutputBadge enabled={command.payload.fan} />
+                          </td>
+                          <td className="py-3 pr-4">
+                            <OutputBadge enabled={command.payload.light} />
+                          </td>
+                          <td className="py-3">
+                            <OutputBadge enabled={command.payload.heater} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <EmptyTableState message="No commands have been sent to this zone yet." />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -380,6 +414,40 @@ export default async function Page({
 
 // Helpers
 
+function EmptyTableState({ message }: { message: string }) {
+  return (
+    <p className="text-muted-foreground py-10 text-center text-sm">{message}</p>
+  )
+}
+
+function CommandStatusBadge({
+  status,
+}: {
+  status: CommandHistoryItem['status']
+}) {
+  if (status === 'failed') {
+    return <Badge variant="destructive">Failed</Badge>
+  }
+
+  if (status === 'acknowledged') {
+    return <Badge variant="secondary">Acknowledged</Badge>
+  }
+
+  if (status === 'published') {
+    return <Badge>Published</Badge>
+  }
+
+  return <Badge variant="outline">Pending</Badge>
+}
+
+function OutputBadge({ enabled }: { enabled: boolean }) {
+  return (
+    <Badge variant={enabled ? 'secondary' : 'outline'}>
+      {enabled ? 'On' : 'Off'}
+    </Badge>
+  )
+}
+
 function formatDate(value: string | null): string {
   if (!value) {
     return 'No data yet'
@@ -389,6 +457,23 @@ function formatDate(value: string | null): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value))
+}
+
+function formatReading(
+  value: number | null,
+  unit: string,
+  maximumFractionDigits: number,
+): string {
+  if (value === null) {
+    return 'No data'
+  }
+
+  const formattedValue = new Intl.NumberFormat('en-GB', {
+    maximumFractionDigits,
+  }).format(value)
+  const separator = unit === '°C' || unit === '%' ? '' : ' '
+
+  return `${formattedValue}${separator}${unit}`
 }
 
 function formatPhase(value: 'lightOn' | 'lightOff' | undefined): string {
