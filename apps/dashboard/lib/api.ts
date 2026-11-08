@@ -119,6 +119,27 @@ export async function updateZone(
   return zoneConfigurationResponseSchema.parse(data)
 }
 
+export async function deleteZone(zoneId: string): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}/zones/${zoneId}`, {
+    method: 'DELETE',
+  })
+
+  if (response.ok) {
+    return
+  }
+
+  const data: unknown = await response.json().catch(() => null)
+  const message =
+    data &&
+    typeof data === 'object' &&
+    'error' in data &&
+    typeof data.error === 'string'
+      ? data.error
+      : 'Failed to delete zone'
+
+  throw new ApiRequestError(message, response.status, data)
+}
+
 export async function getPlantProfiles(): Promise<PlantProfilesResponse> {
   const response = await fetch(`${apiBaseUrl}/plant-profiles`, {
     cache: 'no-store',

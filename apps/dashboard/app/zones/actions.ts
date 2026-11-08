@@ -12,10 +12,15 @@ import {
   ApiRequestError,
   assignPlantProfile,
   createZone,
+  deleteZone,
   updateZone,
 } from '@/lib/api'
 
 export type ZoneFormState = {
+  error: string | null
+}
+
+export type DeleteZoneState = {
   error: string | null
 }
 
@@ -109,6 +114,31 @@ export async function updateZoneAction(
   revalidatePath('/plant-profiles')
   revalidatePath(`/zones/${zoneId}`)
   redirect(`/zones/${zoneId}`)
+}
+
+export async function deleteZoneAction(
+  zoneId: string,
+  previousState: DeleteZoneState,
+  formData: FormData,
+): Promise<DeleteZoneState> {
+  void previousState
+  void formData
+
+  try {
+    await deleteZone(zoneId)
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      return { error: 'This zone no longer exists.' }
+    }
+
+    return {
+      error: error instanceof Error ? error.message : 'Failed to delete zone.',
+    }
+  }
+
+  revalidatePath('/')
+  revalidatePath('/plant-profiles')
+  redirect('/')
 }
 
 export type AssignPlantProfileState = {

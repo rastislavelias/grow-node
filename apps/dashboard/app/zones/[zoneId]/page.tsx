@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ContainerMain } from '@/components/container-main'
+import { DeleteZoneButton } from '@/components/delete-zone-button'
 import { ItemGroup } from '@/components/ui/item'
 import { MetricGaugeCard } from '@/components/metric-gauge'
 import { SiteHeader } from '@/components/site-header'
@@ -123,12 +124,15 @@ export default async function Page({
                 ID: <span className="text-muted-foreground">{zone.id}</span>
               </p>
             </div>
-            <Button asChild variant="outline">
-              <Link href={`/zones/${zone.id}/edit`}>
-                <PencilIcon />
-                Edit zone
-              </Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button asChild variant="outline">
+                <Link href={`/zones/${zone.id}/edit`}>
+                  <PencilIcon />
+                  Edit zone
+                </Link>
+              </Button>
+              <DeleteZoneButton zoneId={zone.id} zoneName={zone.name} />
+            </div>
           </header>
 
           <section>
