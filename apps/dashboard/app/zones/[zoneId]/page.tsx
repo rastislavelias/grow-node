@@ -6,7 +6,6 @@ import {
   FanIcon,
   LightbulbIcon,
   PencilIcon,
-  ThermometerIcon,
   WifiIcon,
   WifiOffIcon,
 } from 'lucide-react'
@@ -73,7 +72,18 @@ export default async function Page({
   }
 
   const { zone, metricEvaluation } = zoneResult
-  const latest = zone.latestTelemetry
+  const coreMetrics = metricEvaluation.metrics.filter(
+    (metric) =>
+      metric.key === 'temperature' ||
+      metric.key === 'humidity' ||
+      metric.key === 'illuminance',
+  )
+  const advancedMetrics = metricEvaluation.metrics.filter(
+    (metric) =>
+      metric.key === 'estimatedPpfd' ||
+      metric.key === 'vpd' ||
+      metric.key === 'condensationMargin',
+  )
 
   const zoneStatus = getZoneStatus(zone)
 
@@ -168,117 +178,123 @@ export default async function Page({
             </ItemGroup>
           </section>
 
-          <ZonePlantProfileForm
-            currentPlantProfile={zone.plantProfile}
-            plantProfiles={profilesResult.plantProfiles}
-            zoneId={zone.id}
-          />
+          {zone.state?.reasons?.length && zone.state.reasons.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Needs attention</CardTitle>
+                <CardDescription>
+                  Conditions currently outside their configured target range
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {zone.state.reasons.map((reason) => (
+                    <li
+                      className="bg-muted rounded-md px-3 py-2 text-sm"
+                      key={reason.metric}
+                    >
+                      <span className="font-medium">
+                        {formatMetricName(reason.metric)}
+                      </span>{' '}
+                      <span className="text-muted-foreground">
+                        is {reason.direction} ({reason.status})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ) : null}
 
-          <section>
-            {zone.state?.reasons?.length && zone.state.reasons.length > 0 ? (
-              <ul className="space-y-2">
-                {zone.state?.reasons.map((reason) => (
-                  <li key={reason.metric}>{reason.metric}</li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
-
-          <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4">
-            {/* Temporary debug card */}
-            <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
-              {metricEvaluation.metrics.map((metric) => (
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Core conditions
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Current environmental readings compared with the plant profile.
+              </p>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
+              {coreMetrics.map((metric) => (
                 <MetricGaugeCard key={metric.key} metric={metric} />
               ))}
-            </section>
+            </div>
+          </section>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Phase</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">
-                  {latest ? `${zone.state?.activePhase}` : 'No data'}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Temperature</CardTitle>
-                <CardDescription>Latest reading</CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center gap-3">
-                <ThermometerIcon className="text-muted-foreground size-5" />
-                <p className="text-2xl font-semibold">
-                  {latest ? `${latest.temperatureC}°C` : 'No data'}
-                </p>
-              </CardContent>
-            </Card>
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Advanced conditions
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Derived readings used to assess plant health and condensation
+                risk.
+              </p>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,18rem),1fr))] gap-4">
+              {advancedMetrics.map((metric) => (
+                <MetricGaugeCard key={metric.key} metric={metric} />
+              ))}
+            </div>
+          </section>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Humidity</CardTitle>
-                <CardDescription>Latest reading</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">
-                  {latest ? `${latest.humidityPct}%` : 'No data'}
-                </p>
-              </CardContent>
-            </Card>
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Automation
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Current lighting phase and desired controller outputs.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lighting phase</CardTitle>
+                  <CardDescription>Active schedule phase</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-semibold">
+                    {formatPhase(zone.state?.activePhase)}
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Light</CardTitle>
-                <CardDescription>Lux / PPFD</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">
-                  {latest ? `${latest.lightLux} lx` : 'No data'}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  PPFD: {latest?.estimatedPpfd ?? 'No data'}
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Outputs</CardTitle>
+                  <CardDescription>Desired state</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p className="flex items-center gap-2">
+                    <FanIcon className="text-muted-foreground size-4" />
+                    Fan: {zone.state?.fanDesired ? 'On' : 'Off'}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <LightbulbIcon className="text-muted-foreground size-4" />
+                    Light: {zone.state?.lightDesired ? 'On' : 'Off'}
+                  </p>
+                  <p>Heater: {zone.state?.heaterDesired ? 'On' : 'Off'}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>VPD</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">
-                  {latest ? `${latest.vpdKpa} kPa` : 'No data'}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>Condensation margin</CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">
-                  {latest ? `${latest.condensationMarginC}°C` : 'No data'}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Outputs</CardTitle>
-                <CardDescription>Desired state</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p className="flex items-center gap-2">
-                  <FanIcon className="text-muted-foreground size-4" />
-                  Fan: {zone.state?.fanDesired ? 'On' : 'Off'}
-                </p>
-                <p className="flex items-center gap-2">
-                  <LightbulbIcon className="text-muted-foreground size-4" />
-                  Light: {zone.state?.lightDesired ? 'On' : 'Off'}
-                </p>
-                <p>Heater: {zone.state?.heaterDesired ? 'On' : 'Off'}</p>
-              </CardContent>
-            </Card>
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Configuration
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Plant profile currently assigned to this zone.
+              </p>
+            </div>
+            <ZonePlantProfileForm
+              currentPlantProfile={zone.plantProfile}
+              plantProfiles={profilesResult.plantProfiles}
+              zoneId={zone.id}
+            />
           </section>
 
           <Card>
@@ -373,4 +389,18 @@ function formatDate(value: string | null): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value))
+}
+
+function formatPhase(value: 'lightOn' | 'lightOff' | undefined): string {
+  if (!value) {
+    return 'No state'
+  }
+
+  return value === 'lightOn' ? 'Light on' : 'Light off'
+}
+
+function formatMetricName(value: string): string {
+  return value
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (character) => character.toUpperCase())
 }
