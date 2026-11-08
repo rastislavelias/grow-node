@@ -65,6 +65,7 @@ The optional ESP32 firmware follows the same MQTT contract but is not required f
 
 - Expose health and zone endpoints required by the dashboard.
 - Read current state, recent telemetry, and recent commands from PostgreSQL.
+- Expose zone create, update, and delete endpoints.
 - Expose plant-profile list, detail, create, update, and delete endpoints.
 - Allow a plant profile to be assigned to a zone.
 - Reject deletion with `409 Conflict` when one or more zones use the profile, returning the affected zone IDs and names.
@@ -107,6 +108,17 @@ The primary demo must show a healthy state when the simulator and all services a
 - Allow deletion only when no zone uses the profile.
 - When deletion is blocked, show an alert listing and linking to every zone that uses the profile.
 - Keep profile management local-only and unauthenticated for the portfolio MVP; do not present it as a production-secure admin system.
+
+### Zone management
+
+- List, create, edit, and delete zones through the local dashboard.
+- Require a unique zone ID, display name, controller type, and plant profile when creating a zone.
+- Treat the zone ID as the controller's MQTT identity and keep it immutable after creation.
+- Allow the zone name, controller type, firmware version, and assigned plant profile to be edited.
+- Create an initial zone-state record together with every zone.
+- Require explicit confirmation before deleting a zone because its telemetry, heartbeats, command history, and current state are deleted with it.
+- Present zone creation as local controller registration, not remote device provisioning.
+- Keep physical-device provisioning, credentials, certificates, and automatic simulator-instance management out of scope.
 
 ### Shared packages
 
@@ -196,9 +208,11 @@ docs                        Project scope and supporting documentation
 - [x] Profiles can be assigned to zones.
 - [x] Deleting an unused profile succeeds.
 - [x] Deleting an in-use profile returns a conflict with the affected zones.
-- [ ] Dashboard profile management supports complete profile creation and editing.
-- [ ] A blocked-delete alert links to every affected zone.
-- [ ] Default seed/demo presents one active simulated zone without a misleading degraded state.
+- [x] Dashboard profile management supports complete profile creation and editing.
+- [x] A blocked-delete alert links to every affected zone.
+- [x] Default seed/demo presents one active simulated zone without a misleading degraded state.
+- [ ] Zone create, edit, and delete API endpoints are implemented and validated.
+- [ ] Dashboard supports zone creation, editing, and confirmed deletion.
 - [ ] Dashboard presents core and advanced metrics with a clear hierarchy.
 - [ ] Temporary debug UI and unused components are removed.
 - [ ] Root README matches the final behaviour and includes a current screenshot.
