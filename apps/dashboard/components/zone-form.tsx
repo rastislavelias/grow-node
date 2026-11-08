@@ -14,6 +14,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const initialState: ZoneFormState = { error: null }
 
@@ -63,16 +70,15 @@ export function ZoneForm({
             />
           </FormField>
           <FormField label="Controller type" name="controllerType">
-            <select
-              className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:ring-3"
-              defaultValue="esp32"
-              id="controllerType"
-              name="controllerType"
-              required
-            >
-              <option value="esp32">ESP32</option>
-              <option value="simulator">Simulator</option>
-            </select>
+            <Select defaultValue="esp32" name="controllerType" required>
+              <SelectTrigger className="w-full" id="controllerType">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="esp32">ESP32</SelectItem>
+                <SelectItem value="simulator">Simulator</SelectItem>
+              </SelectContent>
+            </Select>
           </FormField>
           <FormField
             hint="Optional"
@@ -91,19 +97,23 @@ export function ZoneForm({
             label="Plant profile"
             name="plantProfileId"
           >
-            <select
-              className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:ring-3"
+            <Select
+              defaultValue={plantProfiles[0]?.id}
               disabled={!canCreate}
-              id="plantProfileId"
               name="plantProfileId"
               required
             >
-              {plantProfiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full" id="plantProfileId">
+                <SelectValue placeholder="Select a plant profile" />
+              </SelectTrigger>
+              <SelectContent>
+                {plantProfiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
         </CardContent>
       </Card>

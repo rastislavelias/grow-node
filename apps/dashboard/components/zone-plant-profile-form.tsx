@@ -16,6 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 const initialState: AssignPlantProfileState = { error: null }
 
@@ -45,19 +52,22 @@ export function ZonePlantProfileForm({
             <label className="text-sm font-medium" htmlFor="plantProfileId">
               Assigned profile
             </label>
-            <select
-              className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 mt-1.5 h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:ring-3"
+            <Select
               defaultValue={currentPlantProfile.id}
-              id="plantProfileId"
               name="plantProfileId"
               required
             >
-              {plantProfiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1.5 w-full" id="plantProfileId">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {plantProfiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Button disabled={pending} type="submit">
             {pending ? 'Saving…' : 'Save profile'}
