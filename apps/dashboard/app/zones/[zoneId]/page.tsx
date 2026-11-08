@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AutoRefresh } from '@/components/auto-refresh'
 import { ContainerMain } from '@/components/container-main'
 import { DeleteZoneButton } from '@/components/delete-zone-button'
 import { ItemGroup } from '@/components/ui/item'
@@ -108,6 +109,7 @@ export default async function Page({
 
   return (
     <>
+      <AutoRefresh intervalMs={5000} />
       <SiteHeader>
         <Breadcrumb>
           <BreadcrumbList>

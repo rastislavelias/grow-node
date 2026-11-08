@@ -10,12 +10,43 @@ export function AutoRefresh({ intervalMs = 5000 }: AutoRefreshProps) {
   const router = useRouter()
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
+    let intervalId: number | null = null
+
+    const stopRefreshing = () => {
+      if (intervalId === null) {
+        return
+      }
+
+      window.clearInterval(intervalId)
+      intervalId = null
+    }
+
+    const startRefreshing = () => {
+      if (document.visibilityState === 'hidden' || intervalId !== null) {
+        return
+      }
+
+      intervalId = window.setInterval(() => {
+        router.refresh()
+      }, intervalMs)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        stopRefreshing()
+        return
+      }
+
       router.refresh()
-    }, intervalMs)
+      startRefreshing()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    startRefreshing()
 
     return () => {
-      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      stopRefreshing()
     }
   }, [intervalMs, router])
 
